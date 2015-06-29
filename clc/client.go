@@ -48,6 +48,14 @@ type Token struct {
 	Token string `json:"bearerToken"`
 }
 
+func (t Token) Bearer() string {
+	return fmt.Sprintf("Bearer %s", t.Token)
+}
+
+func (t Token) Exp() bool {
+	return t.Token != ""
+}
+
 type Config struct {
 	Name     string
 	Password string
