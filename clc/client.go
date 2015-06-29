@@ -96,9 +96,14 @@ func EnvConfig() (*Config, error) {
 	if pw == "" {
 		return nil, errors.New("Please set CLC_PASSWORD")
 	}
+	alias := os.Getenv("CLC_ALIAS")
+	if alias == "" {
+		return nil, errors.New("Please set CLC_ALIAS")
+	}
 
 	return &Config{
 		Name:     user,
 		Password: pw,
+		Alias:    alias,
 	}, nil
 }
