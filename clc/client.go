@@ -26,8 +26,25 @@ func New(config *Config) *Client {
 	}
 }
 
-func (c *Client) Auth() (string, error) {
-	url := `https://api.ctl.io/v2/authentication/login`
+func (c *Client) get(url string, resp interface{}) error {
+	return c.do("get", url, nil, resp)
+}
+
+func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	return json.NewDecoder(res.Body).Decode(resp)
+}
+
+func (c *Client) auth() (string, error) {
+	url := fmt.Sprintf("%s/authentication/login", c.baseURL)
 	body := []byte(fmt.Sprintf(`{"username":"%s", "password":"%s"}`, c.config.Name, c.config.Password))
 	req, err := http.NewRequest("POST", url, ioutil.NopCloser(bytes.NewReader(body)))
 	if err != nil {
