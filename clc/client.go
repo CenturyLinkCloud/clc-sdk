@@ -5,21 +5,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
 
 type Client struct {
-	config *Config
-	client *http.Client
-	token  Token
+	config  *Config
+	client  *http.Client
+	token   Token
+	baseURL string
 }
 
 func New(config *Config) *Client {
 	return &Client{
-		config: config,
-		client: http.DefaultClient,
+		config:  config,
+		client:  http.DefaultClient,
+		baseURL: "https://api.ctl.io/v2",
 	}
 }
 
