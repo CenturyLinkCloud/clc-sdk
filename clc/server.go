@@ -9,6 +9,29 @@ func (c *Client) GetServer(name string) (*ServerResponse, error) {
 	return server, err
 }
 
+type Server struct {
+	CPU             int    `json:"cpu"`
+	Description     string `json:"description"`
+	GroupID         string `json:"groupId"`
+	IPAddress       string `json:"ipAddress"`
+	IsManagedOS     bool   `json:"isManagedOS"`
+	MemoryGB        int    `json:"memoryGB"`
+	Name            string `json:"name"`
+	NetworkID       string `json:"networkId"`
+	Password        string `json:"password"`
+	PrimaryDNS      string `json:"primaryDns"`
+	SecondaryDNS    string `json:"secondaryDns"`
+	SourceServerID  string `json:"sourceServerId"`
+	StorageType     string `json:"storageType"`
+	Type            string `json:"type"`
+	CustomFields    map[string]string
+	AdditionalDisks []struct {
+		Path   string `json:"path"`
+		SizeGB int    `json:"sizeGB"`
+		Type   string `json:"type"`
+	} `json:"additionalDisks"`
+}
+
 type ServerResponse struct {
 	ChangeInfo struct {
 		CreatedBy    string `json:"createdBy"`
