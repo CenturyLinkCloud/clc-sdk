@@ -35,6 +35,14 @@ func (c *Client) do(method, url string, body io.Reader, resp interface{}) error 
 	if err != nil {
 		return err
 	}
+	if !c.token.Exp() {
+		token, err := c.auth()
+		if err != nil {
+			return err
+		}
+		c.token = Token{token}
+	}
+	req.Header.Add("Authorization", c.token.Bearer())
 	req.Header.Add("Content-Type", "application/json")
 	res, err := c.client.Do(req)
 	if err != nil {
