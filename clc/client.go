@@ -53,6 +53,23 @@ func (c *Client) Auth() (string, error) {
 	return auth.Token, nil
 }
 
+func (c *Client) get(url string, resp interface{}) error {
+	return c.do("GET", url, nil, resp)
+}
+
+func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	return json.NewDecoder(res.Body).Decode(resp)
+}
+
 type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
