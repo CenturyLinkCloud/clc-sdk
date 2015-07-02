@@ -6,6 +6,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/mikebeyer/env",
+			"Rev": "5542ea3928def3534e9187cd50747317f45ef4db"
+		},
+		{
 			"ImportPath": "github.com/stretchr/testify/assert",
 			"Rev": "e4ec8152c15fc46bd5056ce65997a07c7d415325"
 		}
