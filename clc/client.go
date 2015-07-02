@@ -3,6 +3,7 @@ package clc
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -80,6 +81,11 @@ func (c *Client) do(method, url string, body io.Reader, resp interface{}) error 
 	if err != nil {
 		return err
 	}
+
+	if res.StatusCode >= 300 {
+		return errors.New(fmt.Sprintf("http error: %s", res.Status))
+	}
+
 	return json.NewDecoder(res.Body).Decode(resp)
 }
 
