@@ -33,6 +33,8 @@ type Client struct {
 	config  Config
 	client  *http.Client
 	baseURL string
+
+	Token Token
 }
 
 func New(config Config) *Client {
@@ -72,11 +74,20 @@ func (c *Client) get(url string, resp interface{}) error {
 }
 
 func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
+	if !c.Token.Valid() {
+		token, err := c.Auth()
+		if err != nil {
+			return err
+		}
+		c.Token = Token{token}
+	}
+
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return err
 	}
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer "+c.Token.Token)
 	res, err := c.client.Do(req)
 	if err != nil {
 		return err
@@ -100,4 +111,12 @@ type Auth struct {
 	Location string   `json:"locationAlias"`
 	Roles    []string `json:"roles"`
 	Token    string   `json:"bearerToken"`
+}
+
+type Token struct {
+	Token string
+}
+
+func (t Token) Valid() bool {
+	return t.Token != ""
 }
