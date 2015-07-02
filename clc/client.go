@@ -7,12 +7,25 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/mikebeyer/env"
 )
 
 type Config struct {
 	User    User
 	Alias   string
 	BaseURL string
+}
+
+func EnvConfig() Config {
+	return Config{
+		User: User{
+			Username: env.MustString("CLC_USERNAME"),
+			Password: env.MustString("CLC_PASSWORD"),
+		},
+		Alias:   env.MustString("CLC_ALIAS"),
+		BaseURL: env.String("CLC_BASE_URL", "https://api.ctl.io/v2"),
+	}
 }
 
 type Client struct {
