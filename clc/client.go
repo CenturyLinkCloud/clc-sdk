@@ -34,7 +34,7 @@ type Client struct {
 	client  *http.Client
 	baseURL string
 
-	Token Token
+	Token Auth
 }
 
 func New(config Config) *Client {
@@ -61,12 +61,11 @@ func (c *Client) Auth() (string, error) {
 		return "", err
 	}
 
-	auth := &Auth{}
-	if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&c.Token); err != nil {
 		return "", err
 	}
 
-	return auth.Token, nil
+	return c.Token.Token, nil
 }
 
 func (c *Client) get(url string, resp interface{}) error {
@@ -79,7 +78,7 @@ func (c *Client) do(method, url string, body io.Reader, resp interface{}) error 
 		if err != nil {
 			return err
 		}
-		c.Token = Token{token}
+		c.Token.Token = token
 	}
 
 	req, err := http.NewRequest(method, url, body)
@@ -113,10 +112,6 @@ type Auth struct {
 	Token    string   `json:"bearerToken"`
 }
 
-type Token struct {
-	Token string
-}
-
-func (t Token) Valid() bool {
-	return t.Token != ""
+func (a Auth) Valid() bool {
+	return a.Token != ""
 }

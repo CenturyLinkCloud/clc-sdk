@@ -72,6 +72,6 @@ func client(url string) *clc.Client {
 		Alias:   "test",
 	}
 	client := clc.New(config)
-	client.Token = clc.Token{"validtoken"}
+	client.Token = clc.Auth{Token: "validtoken"}
 	return client
 }
