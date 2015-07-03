@@ -72,7 +72,16 @@ func (c *Client) get(url string, resp interface{}) error {
 	return c.do("GET", url, nil, resp)
 }
 
-func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
+func (c *Client) post(url string, body, resp interface{}) error {
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(body)
+	if err != nil {
+		panic(err)
+	}
+	return c.do("POST", url, ioutil.NopCloser(b), resp)
+}
+
+func (c *Client) do(method, url string, body io.ReadCloser, resp interface{}) error {
 	if !c.Token.Valid() {
 		token, err := c.Auth()
 		if err != nil {

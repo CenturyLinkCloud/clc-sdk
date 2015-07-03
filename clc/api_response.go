@@ -62,9 +62,15 @@ type Server struct {
 	Links []Link `json:"links"`
 }
 
+type ServerCreate struct {
+	Server   string `json:"server"`
+	IsQueued bool   `json:"isQueued"`
+	Links    []Link `json:"links"`
+}
+
 type Link struct {
 	Rel   string   `json:"rel"`
 	Href  string   `json:"href"`
 	ID    string   `json:"id"`
-	Verbs []string `json:"verbs"`
+	Verbs []string `json:"verbs,omitempty"`
 }

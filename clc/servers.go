@@ -12,3 +12,10 @@ func (s *ServerService) Get(name string) (*Server, error) {
 	err := s.get(url, server)
 	return server, err
 }
+
+func (s *ServerService) Create(server Server) (*ServerCreate, error) {
+	url := fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias)
+	resp := &ServerCreate{}
+	err := s.post(url, server, resp)
+	return resp, err
+}
