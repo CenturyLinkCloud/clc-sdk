@@ -6,7 +6,7 @@ type Server struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
 	GroupID        string `json:"groupId"`
-	SourceserverID string `json:"sourceServerId"`
+	SourceServerID string `json:"sourceServerId"`
 	IsManagedOS    bool   `json:"isManagedOS"`
 	PrimaryDNS     string `json:"primaryDns"`
 	SecondaryDNS   string `json:"secondaryDns"`
@@ -27,6 +27,10 @@ type Server struct {
 		Type   string `json:"type"`
 	} `json:"additionalDisks"`
 	TTL time.Time `json:"ttl"`
+}
+
+func (s *Server) Valid() bool {
+	return s.Name != "" && s.CPU != 0 && s.MemoryGB != 0 && s.GroupID != "" && s.SourceServerID != ""
 }
 
 type ServerResponse struct {

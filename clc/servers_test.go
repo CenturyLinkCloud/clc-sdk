@@ -33,7 +33,12 @@ func TestCreateServer(t *testing.T) {
 
 	service := clc.ServerService{client(ms.URL)}
 	server := clc.Server{
-		Name: "va1testserver01",
+		Name:           "va1testserver01",
+		CPU:            1,
+		MemoryGB:       1,
+		GroupID:        "group",
+		SourceServerID: "UBUNTU",
+		Type:           "standard",
 	}
 	_, err := service.Create(server)
 
@@ -67,7 +72,14 @@ func postServerResponse(assert *assert.Assertions) func(w http.ResponseWriter, r
 		}
 
 		server := &clc.Server{}
-		json.NewDecoder(r.Body).Decode(server)
+		err := json.NewDecoder(r.Body).Decode(server)
+		if err != nil {
+			assert.Fail("Failed to serialize server", err)
+		}
+
+		if !server.Valid() {
+			assert.Fail("Server missing required fields", server)
+		}
 
 		create := &clc.ServerCreateResponse{
 			Server:   server.Name,
