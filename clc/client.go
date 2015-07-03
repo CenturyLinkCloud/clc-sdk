@@ -35,6 +35,8 @@ type Client struct {
 	baseURL string
 
 	Token Auth
+
+	Server *ServerService
 }
 
 func New(config Config) *Client {
@@ -42,11 +44,13 @@ func New(config Config) *Client {
 	if url == "" {
 		url = "https://api.ctl.io/v2"
 	}
-	return &Client{
+	client := &Client{
 		config:  config,
 		client:  http.DefaultClient,
 		baseURL: url,
 	}
+	client.Server = &ServerService{client}
+	return client
 }
 
 func (c *Client) Auth() (string, error) {
