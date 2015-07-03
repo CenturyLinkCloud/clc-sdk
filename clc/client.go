@@ -53,25 +53,6 @@ func New(config Config) *Client {
 	return client
 }
 
-func (c *Client) Auth() (string, error) {
-	url := fmt.Sprintf("%s/authentication/login", c.baseURL)
-	b, err := json.Marshal(&c.config.User)
-	if err != nil {
-		return "", err
-	}
-
-	resp, err := http.Post(url, "application/json", ioutil.NopCloser(bytes.NewReader(b)))
-	if err != nil {
-		return "", err
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&c.Token); err != nil {
-		return "", err
-	}
-
-	return c.Token.Token, nil
-}
-
 func (c *Client) get(url string, resp interface{}) error {
 	return c.do("GET", url, nil, resp)
 }
@@ -110,21 +91,4 @@ func (c *Client) do(method, url string, body io.ReadCloser, resp interface{}) er
 	}
 
 	return json.NewDecoder(res.Body).Decode(resp)
-}
-
-type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type Auth struct {
-	Username string   `json:"userName"`
-	Alias    string   `json:"accountAlias"`
-	Location string   `json:"locationAlias"`
-	Roles    []string `json:"roles"`
-	Token    string   `json:"bearerToken"`
-}
-
-func (a Auth) Valid() bool {
-	return a.Token != ""
 }
