@@ -76,6 +76,5 @@ func postServerResponse(assert *assert.Assertions) func(w http.ResponseWriter, r
 
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(create)
-
 	}
 }
