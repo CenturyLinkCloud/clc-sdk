@@ -50,7 +50,7 @@ func getServerResource(assert *assert.Assertions, name string) func(w http.Respo
 			assert.Fail("GET server hitting wrong endpoint", r.URL.Path)
 		}
 
-		server := &clc.Server{Name: name}
+		server := &clc.ServerResponse{Name: name}
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(server)
 	}
@@ -69,7 +69,7 @@ func postServerResponse(assert *assert.Assertions) func(w http.ResponseWriter, r
 		server := &clc.Server{}
 		json.NewDecoder(r.Body).Decode(server)
 
-		create := &clc.ServerCreate{
+		create := &clc.ServerCreateResponse{
 			Server:   server.Name,
 			IsQueued: true,
 		}

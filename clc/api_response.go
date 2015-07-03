@@ -1,48 +1,71 @@
 package clc
 
+import "time"
+
 type Server struct {
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	GroupID        string `json:"groupId"`
+	SourceserverID string `json:"sourceServerId"`
+	IsManagedOS    bool   `json:"isManagedOS"`
+	PrimaryDNS     string `json:"primaryDns"`
+	SecondaryDNS   string `json:"secondaryDns"`
+	NetworkID      string `json:"networkId"`
+	IPaddress      string `json:"ipAddress"`
+	Password       string `json:"password"`
+	CPU            int    `json:"cpu"`
+	MemoryGB       int    `json:"memoryGB"`
+	Type           string `json:"type"`
+	Storagetype    string `json:"storageType"`
+	Customfields   []struct {
+		ID    string `json:"id"`
+		Value string `json:"value"`
+	} `json:"customFields"`
+	Additionaldisks []struct {
+		Path   string `json:"path"`
+		SizeGB int    `json:"sizeGB"`
+		Type   string `json:"type"`
+	} `json:"additionalDisks"`
+	TTL time.Time `json:"ttl"`
+}
+
+type ServerResponse struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	GroupID     string `json:"groupId"`
-	Istemplate  bool   `json:"isTemplate"`
+	IsTemplate  bool   `json:"isTemplate"`
 	LocationID  string `json:"locationId"`
-	Ostype      string `json:"osType"`
+	OStype      string `json:"osType"`
 	Status      string `json:"status"`
 	Details     struct {
-		Ipaddresses []struct {
+		IPaddresses []struct {
 			Internal string `json:"internal"`
 		} `json:"ipAddresses"`
-		Alertpolicies []struct {
+		AlertPolicies []struct {
 			ID    string `json:"id"`
 			Name  string `json:"name"`
-			Links []struct {
-				Rel  string `json:"rel"`
-				Href string `json:"href"`
-			} `json:"links"`
+			Links []Link `json:"links"`
 		} `json:"alertPolicies"`
 		CPU               int    `json:"cpu"`
 		Diskcount         int    `json:"diskCount"`
 		Hostname          string `json:"hostName"`
-		Inmaintenancemode bool   `json:"inMaintenanceMode"`
-		Memorymb          int    `json:"memoryMB"`
+		InMaintenanceMode bool   `json:"inMaintenanceMode"`
+		MemoryMB          int    `json:"memoryMB"`
 		Powerstate        string `json:"powerState"`
 		Storagegb         int    `json:"storageGB"`
 		Disks             []struct {
 			ID             string        `json:"id"`
-			Sizegb         int           `json:"sizeGB"`
-			Partitionpaths []interface{} `json:"partitionPaths"`
+			SizeGB         int           `json:"sizeGB"`
+			PartitionPaths []interface{} `json:"partitionPaths"`
 		} `json:"disks"`
 		Partitions []struct {
-			Sizegb float64 `json:"sizeGB"`
+			SizeGB float64 `json:"sizeGB"`
 			Path   string  `json:"path"`
 		} `json:"partitions"`
 		Snapshots []struct {
 			Name  string `json:"name"`
-			Links []struct {
-				Rel  string `json:"rel"`
-				Href string `json:"href"`
-			} `json:"links"`
+			Links []Link `json:"links"`
 		} `json:"snapshots"`
 		Customfields []struct {
 			ID           string `json:"id"`
@@ -53,24 +76,24 @@ type Server struct {
 	} `json:"details"`
 	Type        string `json:"type"`
 	Storagetype string `json:"storageType"`
-	Changeinfo  struct {
-		Createddate  string `json:"createdDate"`
-		Createdby    string `json:"createdBy"`
-		Modifieddate string `json:"modifiedDate"`
-		Modifiedby   string `json:"modifiedBy"`
+	ChangeInfo  struct {
+		CreatedDate  string `json:"createdDate"`
+		CreatedBy    string `json:"createdBy"`
+		ModifiedDate string `json:"modifiedDate"`
+		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
 	Links []Link `json:"links"`
 }
 
-type ServerCreate struct {
+type ServerCreateResponse struct {
 	Server   string `json:"server"`
 	IsQueued bool   `json:"isQueued"`
 	Links    []Link `json:"links"`
 }
 
 type Link struct {
-	Rel   string   `json:"rel"`
-	Href  string   `json:"href"`
-	ID    string   `json:"id"`
+	Rel   string   `json:"rel,omitempty"`
+	Href  string   `json:"href,omitempty"`
+	ID    string   `json:"id,omitempty"`
 	Verbs []string `json:"verbs,omitempty"`
 }
