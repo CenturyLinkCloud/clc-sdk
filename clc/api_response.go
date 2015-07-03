@@ -7,26 +7,26 @@ type Server struct {
 	Description    string `json:"description"`
 	GroupID        string `json:"groupId"`
 	SourceServerID string `json:"sourceServerId"`
-	IsManagedOS    bool   `json:"isManagedOS"`
-	PrimaryDNS     string `json:"primaryDns"`
-	SecondaryDNS   string `json:"secondaryDns"`
-	NetworkID      string `json:"networkId"`
-	IPaddress      string `json:"ipAddress"`
-	Password       string `json:"password"`
+	IsManagedOS    bool   `json:"isManagedOS,omitempty"`
+	PrimaryDNS     string `json:"primaryDns,omitempty"`
+	SecondaryDNS   string `json:"secondaryDns,omitempty"`
+	NetworkID      string `json:"networkId,omitempty"`
+	IPaddress      string `json:"ipAddress,omitempty"`
+	Password       string `json:"password,omitempty"`
 	CPU            int    `json:"cpu"`
 	MemoryGB       int    `json:"memoryGB"`
 	Type           string `json:"type"`
-	Storagetype    string `json:"storageType"`
+	Storagetype    string `json:"storageType,omitempty"`
 	Customfields   []struct {
 		ID    string `json:"id"`
 		Value string `json:"value"`
-	} `json:"customFields"`
+	} `json:"customFields,omitempty"`
 	Additionaldisks []struct {
 		Path   string `json:"path"`
 		SizeGB int    `json:"sizeGB"`
 		Type   string `json:"type"`
-	} `json:"additionalDisks"`
-	TTL time.Time `json:"ttl"`
+	} `json:"additionalDisks,omitempty"`
+	TTL time.Time `json:"ttl,omitempty"`
 }
 
 func (s *Server) Valid() bool {
