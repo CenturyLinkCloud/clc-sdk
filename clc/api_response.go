@@ -95,6 +95,12 @@ type ServerCreateResponse struct {
 	Links    []Link `json:"links"`
 }
 
+type DatacenterResponse struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Links []Link `json:"links"`
+}
+
 type Link struct {
 	Rel   string   `json:"rel,omitempty"`
 	Href  string   `json:"href,omitempty"`
