@@ -3,7 +3,6 @@ package clc
 import (
 	"errors"
 	"fmt"
-	"time"
 )
 
 type ServerService struct {
@@ -24,7 +23,7 @@ func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*Serve
 
 	resp := &ServerCreateResponse{}
 	err := s.post(fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias), server, resp)
-	if err == nil && resp != nil {
+	if err == nil && poll != nil {
 		ok, id := resp.Links.GetID("status")
 		if !ok {
 			return resp, fmt.Errorf("No status ID avaiable to poll for server: %s", resp.Server)
@@ -59,7 +58,6 @@ type Server struct {
 		SizeGB int    `json:"sizeGB"`
 		Type   string `json:"type"`
 	} `json:"additionalDisks,omitempty"`
-	TTL time.Time `json:"ttl,omitempty"`
 }
 
 func (s *Server) Valid() bool {
