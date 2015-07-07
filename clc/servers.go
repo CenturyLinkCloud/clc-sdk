@@ -16,12 +16,20 @@ func (s *ServerService) Get(name string) (*ServerResponse, error) {
 	return server, err
 }
 
-func (s *ServerService) Create(server Server) (*ServerCreateResponse, error) {
+func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*ServerCreateResponse, error) {
 	if !server.Valid() {
 		return nil, errors.New("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
 	}
-	url := fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias)
+
 	resp := &ServerCreateResponse{}
-	err := s.post(url, server, resp)
+	err := s.post(fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias), server, resp)
+	if err == nil && resp != nil {
+		id, err := resp.GetStatusId()
+		if err != nil {
+			return resp, err
+		}
+		go s.Status.Poll(id, poll)
+	}
+
 	return resp, err
 }
