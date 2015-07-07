@@ -1,6 +1,10 @@
 package clc
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
 
 type Server struct {
 	Name           string `json:"name"`
@@ -93,6 +97,15 @@ type ServerCreateResponse struct {
 	Server   string `json:"server"`
 	IsQueued bool   `json:"isQueued"`
 	Links    []Link `json:"links"`
+}
+
+func (s *ServerCreateResponse) GetStatusId() (string, error) {
+	for _, v := range s.Links {
+		if v.Rel == "status" {
+			return v.ID, nil
+		}
+	}
+	return "", errors.New(fmt.Sprintf("No status ID found for server %s", s.Server))
 }
 
 type DatacenterResponse struct {
