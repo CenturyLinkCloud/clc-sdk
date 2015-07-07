@@ -37,6 +37,7 @@ type Client struct {
 	Token Auth
 
 	Server *ServerService
+	Status *StatusService
 }
 
 func New(config Config) *Client {
@@ -50,6 +51,7 @@ func New(config Config) *Client {
 		baseURL: url,
 	}
 	client.Server = &ServerService{client}
+	client.Status = &StatusService{client}
 	return client
 }
 

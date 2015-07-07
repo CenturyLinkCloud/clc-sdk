@@ -15,6 +15,8 @@ func TestInitializeClient(t *testing.T) {
 	client := clc.New(clc.Config{})
 
 	assert.NotNil(client)
+	assert.NotNil(client.Server)
+	assert.NotNil(client.Status)
 }
 
 func mockServer(resource func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
