@@ -12,3 +12,9 @@ func (s *DatacenterService) Get(name string) (*DatacenterResponse, error) {
 	err := s.get(url, server)
 	return server, err
 }
+
+type DatacenterResponse struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Links []Link `json:"links"`
+}
