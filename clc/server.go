@@ -25,9 +25,9 @@ func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*Serve
 	resp := &ServerCreateResponse{}
 	err := s.post(fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias), server, resp)
 	if err == nil && resp != nil {
-		id, err := resp.GetStatusId()
-		if err != nil {
-			return resp, err
+		ok, id := resp.Links.GetID("status")
+		if !ok {
+			return resp, fmt.Errorf("No status ID avaiable to poll for server: %s", resp.Server)
 		}
 		go s.Status.Poll(id, poll)
 	}
@@ -119,20 +119,11 @@ type ServerResponse struct {
 		ModifiedDate string `json:"modifiedDate"`
 		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
-	Links []Link `json:"links"`
+	Links Links `json:"link"`
 }
 
 type ServerCreateResponse struct {
 	Server   string `json:"server"`
 	IsQueued bool   `json:"isQueued"`
-	Links    []Link `json:"links"`
-}
-
-func (s *ServerCreateResponse) GetStatusId() (string, error) {
-	for _, v := range s.Links {
-		if v.Rel == "status" {
-			return v.ID, nil
-		}
-	}
-	return "", fmt.Errorf("No status ID found for server %s", s.Server)
+	Links    Links  `json:"link"`
 }
