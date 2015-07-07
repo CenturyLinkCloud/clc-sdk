@@ -1,5 +1,5 @@
 .PHONY : test uats
 test: 
-	go test -v ./clc
+	godep go test -v ./clc/...
 uats:
-	go test -v ./uats
+	BUNDLE_GEMFILE=spec/Gemfile bundle exec rspec spec/*.rb
