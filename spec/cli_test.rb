@@ -2,7 +2,7 @@ require 'json'
 
 describe 'clc cli' do
   before :all do
-    `go build -o spec/cli ./cli`
+    `godep go build -o spec/cli ./cli`
   end
 
   it 'fetches servers' do
