@@ -68,6 +68,10 @@ func (c *Client) post(url string, body, resp interface{}) error {
 	return c.do("POST", url, ioutil.NopCloser(b), resp)
 }
 
+func (c *Client) delete(url string, resp interface{}) error {
+	return c.do("DELETE", url, nil, resp)
+}
+
 func (c *Client) do(method, url string, body io.ReadCloser, resp interface{}) error {
 	if !c.Token.Valid() {
 		token, err := c.Auth()

@@ -49,6 +49,21 @@ func TestCreateServer(t *testing.T) {
 	assert.Equal(s.Server, server.Name)
 }
 
+func TestDeleteServer(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "va1testserver01"
+	resource := deleteServerResource(assert, name)
+	ms := mockServer(resource)
+	defer ms.Close()
+
+	service := clc.ServerService{client(ms.URL)}
+	server, err := service.Delete(name)
+
+	assert.Nil(err)
+	assert.Equal(name, server.Server)
+}
+
 func TestCreateServer_Polling(t *testing.T) {
 	assert := assert.New(t)
 
@@ -87,6 +102,21 @@ func getServerResource(assert *assert.Assertions, name string) func(w http.Respo
 		server := &clc.ServerResponse{Name: name}
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(server)
+	}
+}
+
+func deleteServerResource(assert *assert.Assertions, name string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "DELETE" {
+			assert.Fail("DELETE server method should be DELETE", r.Method)
+		}
+
+		if r.URL.Path != "/servers/test/"+name {
+			assert.Fail("DELETE server hitting wrong endpoint", r.URL.Path)
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`)
 	}
 }
 

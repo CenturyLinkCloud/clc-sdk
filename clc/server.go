@@ -16,12 +16,12 @@ func (s *ServerService) Get(name string) (*ServerResponse, error) {
 	return server, err
 }
 
-func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*ServerCreateResponse, error) {
+func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*ServerQueuedResponse, error) {
 	if !server.Valid() {
 		return nil, errors.New("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
 	}
 
-	resp := &ServerCreateResponse{}
+	resp := &ServerQueuedResponse{}
 	err := s.post(fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias), server, resp)
 	if err == nil && poll != nil {
 		ok, id := resp.Links.GetID("status")
@@ -32,6 +32,13 @@ func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*Serve
 	}
 
 	return resp, err
+}
+
+func (s *ServerService) Delete(name string) (*ServerQueuedResponse, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s", s.baseURL, s.config.Alias, name)
+	server := &ServerQueuedResponse{}
+	err := s.delete(url, server)
+	return server, err
 }
 
 type Server struct {
@@ -120,7 +127,7 @@ type ServerResponse struct {
 	Links Links `json:"links"`
 }
 
-type ServerCreateResponse struct {
+type ServerQueuedResponse struct {
 	Server   string `json:"server"`
 	IsQueued bool   `json:"isQueued"`
 	Links    Links  `json:"links"`
