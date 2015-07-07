@@ -18,13 +18,18 @@ type StatusResponse struct {
 }
 
 func (s *StatusResponse) Complete() bool {
-	return s.Status == "succeeded"
+	return s.Status == CompleteStatus
 }
 
 func (s *StatusResponse) Failed() bool {
-	return s.Status == "failed"
+	return s.Status == FailedStatus
 }
 
 func (s *StatusResponse) Running() bool {
 	return !s.Complete() && !s.Failed()
 }
+
+const (
+	CompleteStatus = "succeeded"
+	FailedStatus   = "failed"
+)
