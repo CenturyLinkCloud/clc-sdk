@@ -13,8 +13,16 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "clc"
-	app.Usage = "v2 api"
+	app.Usage = "clc v2 api cli"
 	app.Version = "0.0.1"
-	app.Commands = []cli.Command{server.Commands(client)}
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Mike Beyer",
+			Email: "michael.beyer@centurylink.com",
+		},
+	}
+	app.Commands = []cli.Command{
+		server.Commands(client),
+	}
 	app.Run(os.Args)
 }
