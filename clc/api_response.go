@@ -1,7 +1,6 @@
 package clc
 
 import (
-	"errors"
 	"fmt"
 	"time"
 )
@@ -105,7 +104,7 @@ func (s *ServerCreateResponse) GetStatusId() (string, error) {
 			return v.ID, nil
 		}
 	}
-	return "", errors.New(fmt.Sprintf("No status ID found for server %s", s.Server))
+	return "", fmt.Errorf("No status ID found for server %s", s.Server)
 }
 
 type DatacenterResponse struct {
