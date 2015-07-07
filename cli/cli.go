@@ -6,6 +6,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/mikebeyer/clc-sdk/clc"
 	"github.com/mikebeyer/clc-sdk/cli/server"
+	"github.com/mikebeyer/clc-sdk/cli/status"
 )
 
 func main() {
@@ -23,6 +24,7 @@ func main() {
 	}
 	app.Commands = []cli.Command{
 		server.Commands(client),
+		status.Commands(client),
 	}
 	app.Run(os.Args)
 }
