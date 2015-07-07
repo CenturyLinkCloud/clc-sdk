@@ -2,6 +2,7 @@ package clc_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -106,14 +107,8 @@ func createServerResource(assert *assert.Assertions) func(w http.ResponseWriter,
 				assert.Fail("Server missing required fields", server)
 			}
 
-			create := &clc.ServerCreateResponse{
-				Server:   server.Name,
-				IsQueued: true,
-				Links:    []clc.Link{clc.Link{Rel: "status", ID: "12345"}},
-			}
-
 			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(create)
+			fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"},{"rel":"self","href":"/v2/servers/test/12345?uuid=True","id":"12345","verbs":["GET"]}]}`)
 		}
 
 		if r.Method == "GET" {

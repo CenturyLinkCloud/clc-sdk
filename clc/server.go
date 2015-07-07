@@ -117,11 +117,11 @@ type ServerResponse struct {
 		ModifiedDate string `json:"modifiedDate"`
 		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
-	Links Links `json:"link"`
+	Links Links `json:"links"`
 }
 
 type ServerCreateResponse struct {
 	Server   string `json:"server"`
 	IsQueued bool   `json:"isQueued"`
-	Links    Links  `json:"link"`
+	Links    Links  `json:"links"`
 }
