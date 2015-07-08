@@ -11,6 +11,15 @@ type ServerService struct {
 
 func (s *ServerService) Get(name string) (*ServerResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s", s.baseURL, s.config.Alias, name)
+	return s.getServer(url)
+}
+
+func (s *ServerService) GetUUID(name string) (*ServerResponse, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s?uuid=true", s.baseURL, s.config.Alias, name)
+	return s.getServer(url)
+}
+
+func (s *ServerService) getServer(url string) (*ServerResponse, error) {
 	server := &ServerResponse{}
 	err := s.get(url, server)
 	return server, err

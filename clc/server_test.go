@@ -26,6 +26,21 @@ func TestGetServer(t *testing.T) {
 	assert.Equal(name, server.Name)
 }
 
+func TestGetServerByUUID(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "5404cf5e-ce20-42dc-9f2a-c16ab67416bb"
+	resource := getServerResource(assert, name)
+	ms := mockServer(resource)
+	defer ms.Close()
+
+	service := clc.ServerService{client(ms.URL)}
+	server, err := service.GetUUID(name)
+
+	assert.Nil(err)
+	assert.Equal(name, server.Name)
+}
+
 func TestCreateServer(t *testing.T) {
 	assert := assert.New(t)
 
@@ -95,13 +110,21 @@ func getServerResource(assert *assert.Assertions, name string) func(w http.Respo
 			assert.Fail("GET server method should be GET", r.Method)
 		}
 
-		if r.URL.Path != "/servers/test/"+name {
-			assert.Fail("GET server hitting wrong endpoint", r.URL.Path)
+		if r.URL.Path == "/servers/test/"+name && len(r.URL.Query()) == 0 {
+			server := &clc.ServerResponse{Name: name}
+			w.Header().Add("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(server)
+			return
 		}
 
-		server := &clc.ServerResponse{Name: name}
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(server)
+		if r.URL.Path == "/servers/test/"+name && r.URL.Query().Get("uuid") == "true" {
+			server := &clc.ServerResponse{Name: name}
+			w.Header().Add("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(server)
+			return
+		}
+
+		assert.Fail("GET server hitting wrong endpoint", r.URL.Path)
 	}
 }
 
