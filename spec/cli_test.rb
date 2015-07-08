@@ -40,7 +40,8 @@ class Cli
   def self.create(name)
     json = JSON.parse(`./spec/cli server create -n #{name} -c 1 -m 1 -t standard -g 8aa8153a1ba24542908155da468bb71a -s UBUNTU-14-64-TEMPLATE`)
     id = json['links'].select{ |val| val['rel'] == 'status' }.flat_map{ |val| val['id'] }[0]
-    server = Server.new(id)
+    uuid = json['links'].select{ |val| val['rel'] == 'self' }.flat_map{ |val| val['id'] }[0]
+    server = Server.new(uuid)
 
     status = JSON.parse(`./spec/cli status get #{id}`)['status']
     until status == 'succeeded' || status == 'failed' do
@@ -56,6 +57,6 @@ class Cli
   end
 
   def self.delete(name)
-    JSON.parse(`./spec/cli server delete #{@server.name}`)
+    JSON.parse(`./spec/cli server delete #{name}`)
   end
 end
