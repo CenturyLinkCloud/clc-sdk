@@ -28,6 +28,10 @@ func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*Serve
 		return nil, errors.New("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
 	}
 
+	if server.Type == "hyperscale" {
+		server.Storagetype = "hyperscale"
+	}
+
 	resp := &ServerQueuedResponse{}
 	err := s.post(fmt.Sprintf("%s/servers/%s", s.baseURL, s.config.Alias), server, resp)
 	if err == nil && poll != nil {
@@ -50,7 +54,7 @@ func (s *ServerService) Delete(name string) (*ServerQueuedResponse, error) {
 
 type Server struct {
 	Name           string `json:"name"`
-	Description    string `json:"description"`
+	Description    string `json:"description,omitempty"`
 	GroupID        string `json:"groupId"`
 	SourceServerID string `json:"sourceServerId"`
 	IsManagedOS    bool   `json:"isManagedOS,omitempty"`
