@@ -35,7 +35,7 @@ func TestGetServerByUUID(t *testing.T) {
 	defer ms.Close()
 
 	service := clc.ServerService{client(ms.URL)}
-	server, err := service.GetUUID(name)
+	server, err := service.Get(name)
 
 	assert.Nil(err)
 	assert.Equal(name, server.Name)

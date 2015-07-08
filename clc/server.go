@@ -3,6 +3,8 @@ package clc
 import (
 	"errors"
 	"fmt"
+
+	"github.com/satori/go.uuid"
 )
 
 type ServerService struct {
@@ -10,16 +12,11 @@ type ServerService struct {
 }
 
 func (s *ServerService) Get(name string) (*ServerResponse, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s", s.baseURL, s.config.Alias, name)
-	return s.getServer(url)
-}
-
-func (s *ServerService) GetUUID(name string) (*ServerResponse, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s?uuid=true", s.baseURL, s.config.Alias, name)
-	return s.getServer(url)
-}
-
-func (s *ServerService) getServer(url string) (*ServerResponse, error) {
+	var query string
+	if _, err := uuid.FromString(name); err == nil {
+		query = "?uuid=true"
+	}
+	url := fmt.Sprintf("%s/servers/%s/%s%s", s.baseURL, s.config.Alias, name, query)
 	server := &ServerResponse{}
 	err := s.get(url, server)
 	return server, err
