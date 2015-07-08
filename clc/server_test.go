@@ -29,7 +29,7 @@ func TestGetServer(t *testing.T) {
 func TestGetServerByUUID(t *testing.T) {
 	assert := assert.New(t)
 
-	name := "5404cf5e-ce20-42dc-9f2a-c16ab67416bb"
+	name := "5404cf5ece2042dc9f2ac16ab67416bb"
 	resource := getServerResource(assert, name)
 	ms := mockServer(resource)
 	defer ms.Close()
@@ -38,7 +38,7 @@ func TestGetServerByUUID(t *testing.T) {
 	server, err := service.Get(name)
 
 	assert.Nil(err)
-	assert.Equal(name, server.Name)
+	assert.Equal("va1testserver01", server.Name)
 }
 
 func TestCreateServer(t *testing.T) {
@@ -118,7 +118,7 @@ func getServerResource(assert *assert.Assertions, name string) func(w http.Respo
 		}
 
 		if r.URL.Path == "/servers/test/"+name && r.URL.Query().Get("uuid") == "true" {
-			server := &clc.ServerResponse{Name: name}
+			server := &clc.ServerResponse{Name: "va1testserver01"}
 			w.Header().Add("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(server)
 			return

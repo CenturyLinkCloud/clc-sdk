@@ -12,7 +12,7 @@ type ServerService struct {
 
 func (s *ServerService) Get(name string) (*ServerResponse, error) {
 	var query string
-	var uuidRegex = regexp.MustCompile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+	var uuidRegex = regexp.MustCompile("[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}")
 
 	if uuidRegex.MatchString(name) {
 		query = "?uuid=true"
