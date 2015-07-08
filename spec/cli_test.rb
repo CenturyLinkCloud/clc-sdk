@@ -28,13 +28,21 @@ describe 'clc cli' do
 
   it 'fetches a known server' do
     json = JSON.parse(`./spec/cli server get #{@server.uuid}`)
+    @server.name = json['id']
 
     expect(json['groupId']).to eq('8aa8153a1ba24542908155da468bb71a')
+    expect(json['details']['cpu']).to eq(1)
+    expect(json['details']['memoryMB']).to eq(1024)
   end
 
+  it 'deletes servers' do
+    json = JSON.parse(`./spec/cli server delete #{@server.name}`)
+
+    expect(json['server']).to eq(@server.name)
+  end
 end
 
 class Server
   include Singleton
-  attr_accessor :uuid
+  attr_accessor :name, :uuid
 end
