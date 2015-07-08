@@ -79,6 +79,38 @@ func create(client *clc.Client) cli.Command {
 				Name:  "type, t",
 				Usage: "standard or hyperscale [required]",
 			},
+			cli.StringFlag{
+				Name:  "password, p",
+				Usage: "server password",
+			},
+			cli.StringFlag{
+				Name:  "description, d",
+				Usage: "server description",
+			},
+			cli.StringFlag{
+				Name:  "ip",
+				Usage: "id address",
+			},
+			cli.BoolFlag{
+				Name:  "managed",
+				Usage: "make server managed",
+			},
+			cli.StringFlag{
+				Name:  "primaryDNS",
+				Usage: "primary dns",
+			},
+			cli.StringFlag{
+				Name:  "secondaryDNS",
+				Usage: "secondary dns",
+			},
+			cli.StringFlag{
+				Name:  "network",
+				Usage: "network id",
+			},
+			cli.StringFlag{
+				Name:  "storage",
+				Usage: "standard or premium",
+			},
 		},
 		Action: func(c *cli.Context) {
 			server := clc.Server{
@@ -88,6 +120,30 @@ func create(client *clc.Client) cli.Command {
 				GroupID:        c.String("group"),
 				SourceServerID: c.String("source"),
 				Type:           c.String("type"),
+			}
+			if c.String("password") != "" {
+				server.Password = c.String("password")
+			}
+			if c.String("description") != "" {
+				server.Description = c.String("description")
+			}
+			if c.String("ip") != "" {
+				server.IPaddress = c.String("ip")
+			}
+			if c.Bool("managed") {
+				server.IsManagedOS = true
+			}
+			if c.String("primaryDNS") != "" {
+				server.PrimaryDNS = c.String("primaryDNS")
+			}
+			if c.String("secondaryDNS") != "" {
+				server.SecondaryDNS = c.String("secondaryDNS")
+			}
+			if c.String("network") != "" {
+				server.NetworkID = c.String("network")
+			}
+			if c.String("storage") != "" {
+				server.Storagetype = c.String("storage")
 			}
 			resp, err := client.Server.Create(server, nil)
 			if err != nil {
