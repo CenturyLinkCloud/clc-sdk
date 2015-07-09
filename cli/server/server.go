@@ -11,6 +11,7 @@ import (
 	"github.com/mikebeyer/clc-sdk/clc"
 )
 
+// Commands exports the cli commands for the server package
 func Commands(client *clc.Client) cli.Command {
 	return cli.Command{
 		Name:        "server",
@@ -35,9 +36,7 @@ func get(client *clc.Client) cli.Command {
 		Action: func(c *cli.Context) {
 			server, err := client.Server.Get(c.Args().First())
 			if err != nil {
-				fmt.Errorf("failed to get %s", c.Args().First())
-				log.Printf("%s", err)
-				os.Exit(1)
+				log.Fatalf("failed to get %s", c.Args().First())
 			}
 			b, err := json.MarshalIndent(server, "", "  ")
 			if err != nil {
@@ -55,62 +54,20 @@ func create(client *clc.Client) cli.Command {
 		Aliases: []string{"c"},
 		Usage:   "create server",
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "name, n",
-				Usage: "server name [required]",
-			},
-			cli.StringFlag{
-				Name:  "cpu, c",
-				Usage: "server cpus (1 - 16) [required]",
-			},
-			cli.StringFlag{
-				Name:  "memory, m",
-				Usage: "server memory in gbs (1 - 128) [required]",
-			},
-			cli.StringFlag{
-				Name:  "group, g",
-				Usage: "parent group id [required]",
-			},
-			cli.StringFlag{
-				Name:  "source, s",
-				Usage: "source server id (template or existing server) [required]",
-			},
-			cli.StringFlag{
-				Name:  "type, t",
-				Usage: "standard or hyperscale [required]",
-			},
-			cli.StringFlag{
-				Name:  "password, p",
-				Usage: "server password",
-			},
-			cli.StringFlag{
-				Name:  "description, d",
-				Usage: "server description",
-			},
-			cli.StringFlag{
-				Name:  "ip",
-				Usage: "id address",
-			},
-			cli.BoolFlag{
-				Name:  "managed",
-				Usage: "make server managed",
-			},
-			cli.StringFlag{
-				Name:  "primaryDNS",
-				Usage: "primary dns",
-			},
-			cli.StringFlag{
-				Name:  "secondaryDNS",
-				Usage: "secondary dns",
-			},
-			cli.StringFlag{
-				Name:  "network",
-				Usage: "network id",
-			},
-			cli.StringFlag{
-				Name:  "storage",
-				Usage: "standard or premium",
-			},
+			cli.StringFlag{Name: "name, n", Usage: "server name [required]"},
+			cli.StringFlag{Name: "cpu, c", Usage: "server cpus (1 - 16) [required]"},
+			cli.StringFlag{Name: "memory, m", Usage: "server memory in gbs (1 - 128) [required]"},
+			cli.StringFlag{Name: "group, g", Usage: "parent group id [required]"},
+			cli.StringFlag{Name: "source, s", Usage: "source server id (template or existing server) [required]"},
+			cli.StringFlag{Name: "type, t", Usage: "standard or hyperscale [required]"},
+			cli.StringFlag{Name: "password, p", Usage: "server password"},
+			cli.StringFlag{Name: "description, d", Usage: "server description"},
+			cli.StringFlag{Name: "ip", Usage: "id address"},
+			cli.BoolFlag{Name: "managed", Usage: "make server managed"},
+			cli.StringFlag{Name: "primaryDNS", Usage: "primary dns"},
+			cli.StringFlag{Name: "secondaryDNS", Usage: "secondary dns"},
+			cli.StringFlag{Name: "network", Usage: "network id"},
+			cli.StringFlag{Name: "storage", Usage: "standard or premium"},
 		},
 		Action: func(c *cli.Context) {
 			server := clc.Server{
@@ -147,9 +104,7 @@ func create(client *clc.Client) cli.Command {
 			}
 			resp, err := client.Server.Create(server, nil)
 			if err != nil {
-				fmt.Errorf("failed to create %s", server.Name)
-				log.Printf("%s", err)
-				os.Exit(1)
+				log.Fatalf("failed to create %s", server.Name)
 			}
 			b, err := json.MarshalIndent(resp, "", "  ")
 			if err != nil {
@@ -176,9 +131,7 @@ func delete(client *clc.Client) cli.Command {
 		Action: func(c *cli.Context) {
 			server, err := client.Server.Delete(c.Args().First())
 			if err != nil {
-				fmt.Errorf("failed to delete %s", c.Args().First())
-				log.Printf("%s", err)
-				os.Exit(1)
+				log.Fatalf("failed to delete %s", c.Args().First())
 			}
 			b, err := json.MarshalIndent(server, "", "  ")
 			if err != nil {
