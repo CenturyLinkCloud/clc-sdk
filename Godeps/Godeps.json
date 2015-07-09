@@ -12,7 +12,7 @@
 		},
 		{
 			"ImportPath": "github.com/mikebeyer/env",
-			"Rev": "5542ea3928def3534e9187cd50747317f45ef4db"
+			"Rev": "b6ce30ccdcad3ed9d5ca80329829f5aeaa856e99"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",

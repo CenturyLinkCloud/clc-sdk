@@ -2,7 +2,6 @@
 package env
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -18,11 +17,12 @@ func String(key string, def string) string {
 	return val
 }
 
-// MustString panics if an environment variable is not present.
+// MustString exits if an environment variable is not present.
 func MustString(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		panic(errors.New(fmt.Sprintf("%s must be provided.", key)))
+		fmt.Printf("%s must be provided.", key)
+		os.Exit(1)
 	}
 	return val
 }
