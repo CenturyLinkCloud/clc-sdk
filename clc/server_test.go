@@ -19,7 +19,7 @@ func TestGetServer(t *testing.T) {
 	ms := mockServer(resource)
 	defer ms.Close()
 
-	service := clc.ServerService{client(ms.URL)}
+	service := clc.ServerService{Client: client(ms.URL)}
 	server, err := service.Get(name)
 
 	assert.Nil(err)
@@ -34,7 +34,7 @@ func TestGetServerByUUID(t *testing.T) {
 	ms := mockServer(resource)
 	defer ms.Close()
 
-	service := clc.ServerService{client(ms.URL)}
+	service := clc.ServerService{Client: client(ms.URL)}
 	server, err := service.Get(name)
 
 	assert.Nil(err)
@@ -48,7 +48,7 @@ func TestCreateServer(t *testing.T) {
 	ms := mockServer(r)
 	defer ms.Close()
 
-	service := clc.ServerService{client(ms.URL)}
+	service := clc.ServerService{Client: client(ms.URL)}
 	server := clc.Server{
 		Name:           "va1testserver01",
 		CPU:            1,
@@ -62,21 +62,6 @@ func TestCreateServer(t *testing.T) {
 	assert.Nil(err)
 	assert.True(s.IsQueued)
 	assert.Equal(s.Server, server.Name)
-}
-
-func TestDeleteServer(t *testing.T) {
-	assert := assert.New(t)
-
-	name := "va1testserver01"
-	resource := deleteServerResource(assert, name)
-	ms := mockServer(resource)
-	defer ms.Close()
-
-	service := clc.ServerService{client(ms.URL)}
-	server, err := service.Delete(name)
-
-	assert.Nil(err)
-	assert.Equal(name, server.Server)
 }
 
 func TestCreateServer_Polling(t *testing.T) {
@@ -102,6 +87,21 @@ func TestCreateServer_Polling(t *testing.T) {
 
 	assert.Nil(err)
 	assert.True(status.Complete())
+}
+
+func TestDeleteServer(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "va1testserver01"
+	resource := deleteServerResource(assert, name)
+	ms := mockServer(resource)
+	defer ms.Close()
+
+	service := clc.ServerService{Client: client(ms.URL)}
+	server, err := service.Delete(name)
+
+	assert.Nil(err)
+	assert.Equal(name, server.Server)
 }
 
 func getServerResource(assert *assert.Assertions, name string) func(w http.ResponseWriter, r *http.Request) {
