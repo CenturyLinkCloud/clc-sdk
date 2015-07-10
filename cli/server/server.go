@@ -78,29 +78,18 @@ func create(client *clc.Client) cli.Command {
 				SourceServerID: c.String("source"),
 				Type:           c.String("type"),
 			}
-			if c.String("password") != "" {
-				server.Password = c.String("password")
-			}
-			if c.String("description") != "" {
-				server.Description = c.String("description")
-			}
-			if c.String("ip") != "" {
-				server.IPaddress = c.String("ip")
-			}
-			if c.Bool("managed") {
-				server.IsManagedOS = true
-			}
-			if c.String("primaryDNS") != "" {
-				server.PrimaryDNS = c.String("primaryDNS")
-			}
-			if c.String("secondaryDNS") != "" {
-				server.SecondaryDNS = c.String("secondaryDNS")
-			}
-			if c.String("network") != "" {
-				server.NetworkID = c.String("network")
-			}
-			if c.String("storage") != "" {
-				server.Storagetype = c.String("storage")
+			server.Password = c.String("password")
+			server.Description = c.String("description")
+			server.IPaddress = c.String("ip")
+			server.IsManagedOS = c.Bool("managed")
+			server.PrimaryDNS = c.String("primaryDNS")
+			server.SecondaryDNS = c.String("secondaryDNS")
+			server.NetworkID = c.String("network")
+			server.Storagetype = c.String("storage")
+
+			if !server.Valid() {
+				fmt.Println("missing required flags to create server. [use --help to show required flags]")
+				return
 			}
 			resp, err := client.Server.Create(server, nil)
 			if err != nil {
