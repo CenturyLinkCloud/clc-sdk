@@ -53,24 +53,21 @@ func (s *ServerService) Delete(name string) (*ServerQueuedResponse, error) {
 }
 
 type Server struct {
-	Name           string `json:"name"`
-	Description    string `json:"description,omitempty"`
-	GroupID        string `json:"groupId"`
-	SourceServerID string `json:"sourceServerId"`
-	IsManagedOS    bool   `json:"isManagedOS,omitempty"`
-	PrimaryDNS     string `json:"primaryDns,omitempty"`
-	SecondaryDNS   string `json:"secondaryDns,omitempty"`
-	NetworkID      string `json:"networkId,omitempty"`
-	IPaddress      string `json:"ipAddress,omitempty"`
-	Password       string `json:"password,omitempty"`
-	CPU            int    `json:"cpu"`
-	MemoryGB       int    `json:"memoryGB"`
-	Type           string `json:"type"`
-	Storagetype    string `json:"storageType,omitempty"`
-	Customfields   []struct {
-		ID    string `json:"id"`
-		Value string `json:"value"`
-	} `json:"customFields,omitempty"`
+	Name            string         `json:"name"`
+	Description     string         `json:"description,omitempty"`
+	GroupID         string         `json:"groupId"`
+	SourceServerID  string         `json:"sourceServerId"`
+	IsManagedOS     bool           `json:"isManagedOS,omitempty"`
+	PrimaryDNS      string         `json:"primaryDns,omitempty"`
+	SecondaryDNS    string         `json:"secondaryDns,omitempty"`
+	NetworkID       string         `json:"networkId,omitempty"`
+	IPaddress       string         `json:"ipAddress,omitempty"`
+	Password        string         `json:"password,omitempty"`
+	CPU             int            `json:"cpu"`
+	MemoryGB        int            `json:"memoryGB"`
+	Type            string         `json:"type"`
+	Storagetype     string         `json:"storageType,omitempty"`
+	Customfields    []Customfields `json:"customFields,omitempty"`
 	Additionaldisks []struct {
 		Path   string `json:"path"`
 		SizeGB int    `json:"sizeGB"`
@@ -120,12 +117,7 @@ type ServerResponse struct {
 			Name  string `json:"name"`
 			Links []Link `json:"links"`
 		} `json:"snapshots"`
-		Customfields []struct {
-			ID           string `json:"id"`
-			Name         string `json:"name"`
-			Value        string `json:"value"`
-			Displayvalue string `json:"displayValue"`
-		} `json:"customFields"`
+		Customfields []Customfields `json:"customFields,omitempty"`
 	} `json:"details"`
 	Type        string `json:"type"`
 	Storagetype string `json:"storageType"`
@@ -136,6 +128,13 @@ type ServerResponse struct {
 		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
 	Links Links `json:"links"`
+}
+
+type Customfields struct {
+	ID           string `json:"id,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Value        string `json:"value,omitempty"`
+	Displayvalue string `json:"displayValue,omitempty"`
 }
 
 type ServerQueuedResponse struct {
