@@ -91,14 +91,16 @@ func create(client *clc.Client) cli.Command {
 				fmt.Println("missing required flags to create server. [use --help to show required flags]")
 				return
 			}
+
 			resp, err := client.Server.Create(server, nil)
 			if err != nil {
-				log.Fatalf("failed to create %s", server.Name)
+				fmt.Printf("failed to create %s", server.Name)
+				return
 			}
 			b, err := json.MarshalIndent(resp, "", "  ")
 			if err != nil {
-				log.Printf("%s", err)
-				os.Exit(1)
+				fmt.Printf("%s", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},

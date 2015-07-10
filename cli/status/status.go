@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/codegangsta/cli"
 	"github.com/mikebeyer/clc-sdk/clc"
@@ -34,11 +33,13 @@ func get(client *clc.Client) cli.Command {
 		Action: func(c *cli.Context) {
 			status, err := client.Status.Get(c.Args().First(), nil)
 			if err != nil {
-				log.Fatalf("failed to get status of %s", c.Args().First())
+				fmt.Printf("failed to get status of %s", c.Args().First())
+				return
 			}
 			b, err := json.MarshalIndent(status, "", "  ")
 			if err != nil {
-				log.Fatalf("%s", err)
+				fmt.Printf("%s", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},
