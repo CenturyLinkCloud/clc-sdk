@@ -45,11 +45,45 @@ func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*Serve
 	return resp, err
 }
 
+func (s *ServerService) Update(name string, patches ...ServerPatch) (*ServerQueuedResponse, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s", s.baseURL, s.config.Alias, name)
+	server := &ServerQueuedResponse{}
+	updates := make([]ServerUpdate, 0)
+	for _, v := range patches {
+		m, val := v.Value()
+		updates = append(updates, ServerUpdate{Op: "set", Member: m, Value: val})
+	}
+	err := s.patch(url, updates, server)
+	return server, err
+}
+
 func (s *ServerService) Delete(name string) (*ServerQueuedResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s", s.baseURL, s.config.Alias, name)
 	server := &ServerQueuedResponse{}
 	err := s.delete(url, server)
 	return server, err
+}
+
+type ServerPatch interface {
+	Value() (string, interface{})
+}
+
+type ServerUpdate struct {
+	Op     string      `json:"op"`
+	Member string      `json:"member"`
+	Value  interface{} `json:"value"`
+}
+
+type ServerCPU int
+
+func (c ServerCPU) Value() (string, interface{}) {
+	return "cpu", c
+}
+
+type ServerMemory int
+
+func (m ServerMemory) Value() (string, interface{}) {
+	return "memory", m
 }
 
 type Server struct {

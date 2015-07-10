@@ -68,6 +68,15 @@ func (c *Client) post(url string, body, resp interface{}) error {
 	return c.do("POST", url, ioutil.NopCloser(b), resp)
 }
 
+func (c *Client) patch(url string, body, resp interface{}) error {
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(body)
+	if err != nil {
+		panic(err)
+	}
+	return c.do("PATCH", url, ioutil.NopCloser(b), resp)
+}
+
 func (c *Client) delete(url string, resp interface{}) error {
 	return c.do("DELETE", url, nil, resp)
 }

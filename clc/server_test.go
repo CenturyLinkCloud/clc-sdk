@@ -61,7 +61,7 @@ func TestCreateServer(t *testing.T) {
 
 	assert.Nil(err)
 	assert.True(s.IsQueued)
-	assert.Equal(s.Server, server.Name)
+	assert.Equal(server.Name, s.Server)
 }
 
 func TestCreateServer_Polling(t *testing.T) {
@@ -87,6 +87,23 @@ func TestCreateServer_Polling(t *testing.T) {
 
 	assert.Nil(err)
 	assert.True(status.Complete())
+}
+
+func TestUpdateServer_UpdateCPUAndMemory(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "va1testserver01"
+	r := patchServerRequest(assert, name, "cpu", "memory")
+	ms := mockServer(r)
+	defer ms.Close()
+
+	client := client(ms.URL)
+	cpu := clc.ServerCPU(1)
+	mem := clc.ServerMemory(1)
+	resp, err := client.Server.Update(name, cpu, mem)
+
+	assert.Nil(err)
+	assert.Equal(name, resp.Server)
 }
 
 func TestDeleteServer(t *testing.T) {
@@ -125,6 +142,33 @@ func getServerResource(assert *assert.Assertions, name string) func(w http.Respo
 		}
 
 		assert.Fail("GET server hitting wrong endpoint", r.URL.Path)
+	}
+}
+
+func patchServerRequest(assert *assert.Assertions, name string, members ...string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PATCH" {
+			assert.Fail("PATCH server method should be PATCH", r.Method)
+		}
+
+		if r.URL.Path == "/servers/test/"+name {
+			updates := make([]clc.ServerUpdate, 0)
+			err := json.NewDecoder(r.Body).Decode(&updates)
+			if err != nil {
+				assert.Fail("body: %s", err)
+			}
+
+			for i, v := range updates {
+				assert.Equal(members[i], v.Member)
+			}
+
+			server := &clc.ServerQueuedResponse{Server: name}
+			w.Header().Add("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(server)
+			return
+		}
+
+		assert.Fail("PATCH server hitting wrong endpoint", r.URL.Path)
 	}
 }
 
