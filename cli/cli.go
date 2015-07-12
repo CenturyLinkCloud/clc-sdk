@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -23,8 +24,24 @@ func main() {
 		},
 	}
 	app.Commands = []cli.Command{
+		test(client),
 		server.Commands(client),
 		status.Commands(client),
 	}
 	app.Run(os.Args)
+}
+
+func test(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "test",
+		Aliases: []string{"t"},
+		Action: func(c *cli.Context) {
+			token, err := client.Auth()
+			if err != nil {
+				fmt.Printf("test failed [%s]", err)
+				return
+			}
+			fmt.Printf("success: [%s]", token)
+		},
+	}
 }
