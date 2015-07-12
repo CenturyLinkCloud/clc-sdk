@@ -4,20 +4,24 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
 func (c *Client) Auth() (string, error) {
 	url := fmt.Sprintf("%s/authentication/login", c.baseURL)
-	b, err := json.Marshal(&c.config.User)
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(c.config.User)
 	if err != nil {
 		return "", err
 	}
 
-	resp, err := http.Post(url, "application/json", ioutil.NopCloser(bytes.NewReader(b)))
+	resp, err := http.Post(url, "application/json", b)
 	if err != nil {
 		return "", err
+	}
+
+	if resp.StatusCode >= 400 {
+		return "", fmt.Errorf("http err: [%s]", resp.Status)
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&c.Token); err != nil {

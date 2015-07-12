@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/mikebeyer/env"
@@ -65,7 +64,7 @@ func (c *Client) post(url string, body, resp interface{}) error {
 	if err != nil {
 		panic(err)
 	}
-	return c.do("POST", url, ioutil.NopCloser(b), resp)
+	return c.do("POST", url, b, resp)
 }
 
 func (c *Client) patch(url string, body, resp interface{}) error {
@@ -74,14 +73,14 @@ func (c *Client) patch(url string, body, resp interface{}) error {
 	if err != nil {
 		panic(err)
 	}
-	return c.do("PATCH", url, ioutil.NopCloser(b), resp)
+	return c.do("PATCH", url, b, resp)
 }
 
 func (c *Client) delete(url string, resp interface{}) error {
 	return c.do("DELETE", url, nil, resp)
 }
 
-func (c *Client) do(method, url string, body io.ReadCloser, resp interface{}) error {
+func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
 	if !c.Token.Valid() {
 		token, err := c.Auth()
 		if err != nil {
