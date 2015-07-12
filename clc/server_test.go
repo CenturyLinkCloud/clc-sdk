@@ -106,6 +106,22 @@ func TestUpdateServer_UpdateCPUAndMemory(t *testing.T) {
 	assert.Equal(name, resp.Server)
 }
 
+func TestUpdateServer_UpdateDescription(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "va1testserver01"
+	r := patchServerRequest(assert, name, "description")
+	ms := mockServer(r)
+	defer ms.Close()
+
+	client := client(ms.URL)
+	desc := clc.ServerDescription("omgz")
+	resp, err := client.Server.Update(name, desc)
+
+	assert.Nil(err)
+	assert.Equal(name, resp.Server)
+}
+
 func TestDeleteServer(t *testing.T) {
 	assert := assert.New(t)
 
@@ -152,7 +168,7 @@ func patchServerRequest(assert *assert.Assertions, name string, members ...strin
 		}
 
 		if r.URL.Path == "/servers/test/"+name {
-			updates := make([]clc.ServerUpdate, 0)
+			var updates []clc.ServerUpdate
 			err := json.NewDecoder(r.Body).Decode(&updates)
 			if err != nil {
 				assert.Fail("body: %s", err)

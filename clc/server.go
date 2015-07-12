@@ -48,7 +48,7 @@ func (s *ServerService) Create(server Server, poll chan *StatusResponse) (*Serve
 func (s *ServerService) Update(name string, patches ...ServerPatch) (*ServerQueuedResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s", s.baseURL, s.config.Alias, name)
 	server := &ServerQueuedResponse{}
-	updates := make([]ServerUpdate, 0)
+	var updates []ServerUpdate
 	for _, v := range patches {
 		m, val := v.Value()
 		updates = append(updates, ServerUpdate{Op: "set", Member: m, Value: val})
@@ -84,6 +84,12 @@ type ServerMemory int
 
 func (m ServerMemory) Value() (string, interface{}) {
 	return "memory", m
+}
+
+type ServerDescription string
+
+func (d ServerDescription) Value() (string, interface{}) {
+	return "description", d
 }
 
 type Server struct {
