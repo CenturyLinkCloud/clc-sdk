@@ -25,7 +25,7 @@ func (s *Service) Get(name string) (*Response, error) {
 	return resp, err
 }
 
-func (s *Service) Create(server Server, poll chan bool) (*QueuedResponse, error) {
+func (s *Service) Create(server Server) (*QueuedResponse, error) {
 	if !server.Valid() {
 		return nil, fmt.Errorf("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
 	}
@@ -129,6 +129,10 @@ type QueuedResponse struct {
 	Server   string    `json:"server"`
 	IsQueued bool      `json:"isQueued"`
 	Links    api.Links `json:"links"`
+}
+
+func (q *QueuedResponse) GetStatusID() (bool, string) {
+	return q.Links.GetID("status")
 }
 
 type Customfields struct {

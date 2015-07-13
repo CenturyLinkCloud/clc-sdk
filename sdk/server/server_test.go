@@ -53,7 +53,7 @@ func TestCreateServer(t *testing.T) {
 		SourceServerID: "UBUNTU",
 		Type:           "standard",
 	}
-	s, err := service.Create(server, nil)
+	s, err := service.Create(server)
 
 	assert.Nil(err)
 	assert.True(s.IsQueued)
