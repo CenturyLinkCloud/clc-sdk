@@ -33,11 +33,18 @@ func (s *Service) Create(server Server) (*QueuedResponse, error) {
 	resp := &QueuedResponse{}
 	url := fmt.Sprintf("%s/servers/%s", s.client.Config.BaseURL, s.client.Config.Alias)
 	err := s.client.Post(url, server, resp)
-	if err != nil {
-		return nil, err
-	}
+	return resp, err
+}
 
-	return resp, nil
+func (s *Service) Update(name string, patches ...ServerPatch) (*QueuedResponse, error) {
+	resp := &QueuedResponse{}
+	url := fmt.Sprintf("%s/servers/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	var updates []ServerUpdate
+	for _, v := range patches {
+		updates = append(updates, v.Serialize())
+	}
+	err := s.client.Patch(url, updates, resp)
+	return resp, err
 }
 
 func (s *Service) Delete(name string) (*QueuedResponse, error) {
@@ -45,6 +52,26 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	resp := &QueuedResponse{}
 	err := s.client.Delete(url, resp)
 	return resp, err
+}
+
+type CPU int
+
+func (c CPU) Serialize() ServerUpdate {
+	return ServerUpdate{
+		Op:     "set",
+		Member: "cpu",
+		Value:  c,
+	}
+}
+
+type ServerPatch interface {
+	Serialize() ServerUpdate
+}
+
+type ServerUpdate struct {
+	Op     string `json:"op"`
+	Member string `json:"member"`
+	Value  interface{}
 }
 
 type Server struct {

@@ -59,6 +59,20 @@ func TestCreateServer(t *testing.T) {
 	assert.Equal(server.Name, s.Server)
 }
 
+func TestUpdateServer_UpdateCPU(t *testing.T) {
+	assert := assert.New(t)
+
+	ms, service := mockServerAPI()
+	defer ms.Close()
+
+	name := "va1testserver01"
+	cpu := server.CPU(1)
+	resp, err := service.Update(name, cpu)
+
+	assert.Nil(err)
+	assert.Equal(name, resp.Server)
+}
+
 func TestDeleteServer(t *testing.T) {
 	assert := assert.New(t)
 
@@ -116,8 +130,30 @@ func mockServerAPI() (*httptest.Server, *server.Service) {
 		}
 
 		if r.Method == "DELETE" {
+			parts := strings.Split(r.RequestURI, "/")
+			name := parts[len(parts)-1]
 			w.Header().Add("Content-Type", "application/json")
-			fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`)
+			fmt.Fprint(w, fmt.Sprintf(`{"server":"%s","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`, name))
+			return
+		}
+
+		if r.Method == "PATCH" {
+			updates := make([]server.ServerUpdate, 0)
+			if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+				http.Error(w, "internal server error", http.StatusInternalServerError)
+				return
+			}
+			for _, v := range updates {
+				if v.Op != "set" {
+					http.Error(w, "bad request", http.StatusBadRequest)
+					return
+				}
+			}
+
+			parts := strings.Split(r.RequestURI, "/")
+			name := parts[len(parts)-1]
+			w.Header().Add("Content-Type", "application/json")
+			fmt.Fprint(w, fmt.Sprintf(`{"server":"%s","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`, name))
 			return
 		}
 
