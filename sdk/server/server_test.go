@@ -134,6 +134,5 @@ func mockServerAPI() (*httptest.Server, *server.Service) {
 
 	client := api.New(config)
 	client.Token = api.Token{Token: "validtoken"}
-
 	return mockAPI, server.New(client)
 }

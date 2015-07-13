@@ -21,7 +21,7 @@ func TestGetStatus(t *testing.T) {
 	resp, err := service.Get("12345")
 
 	assert.Nil(err)
-	assert.True(resp.Complete())
+	assert.True(resp.Running())
 }
 
 func TestGetStatus_Polling(t *testing.T) {
@@ -49,19 +49,14 @@ func mockStatusAPI() (*httptest.Server, *status.Service) {
 			return
 		}
 
-		if r.RequestURI == "/operations/test/status/poll" {
-			w.Header().Add("Content-Type", "application/json")
-			if count <= 1 {
-				fmt.Fprintf(w, `{"status":"running"}`)
-			} else {
-				fmt.Fprintf(w, `{"status":"succeeded"}`)
-			}
-			count++
-			return
-		}
-
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"succeeded"}`)
+		if count <= 1 {
+			fmt.Fprintf(w, `{"status":"running"}`)
+		} else {
+			fmt.Fprintf(w, `{"status":"succeeded"}`)
+		}
+		count++
+		return
 	})
 
 	mockAPI := httptest.NewServer(mux)
@@ -76,6 +71,5 @@ func mockStatusAPI() (*httptest.Server, *status.Service) {
 
 	client := api.New(config)
 	client.Token = api.Token{Token: "validtoken"}
-
 	return mockAPI, status.New(client)
 }
