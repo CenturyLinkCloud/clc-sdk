@@ -8,16 +8,21 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/mikebeyer/clc-sdk/clc"
+	"github.com/mikebeyer/clc-sdk/sdk/clc"
+	"github.com/mikebeyer/clc-sdk/sdk/server"
 )
 
 // Commands exports the cli commands for the server package
 func Commands(client *clc.Client) cli.Command {
 	return cli.Command{
-		Name:        "server",
-		Aliases:     []string{"s"},
-		Usage:       "server api",
-		Subcommands: []cli.Command{get(client), create(client), delete(client)},
+		Name:    "server",
+		Aliases: []string{"s"},
+		Usage:   "server api",
+		Subcommands: []cli.Command{
+			get(client),
+			create(client),
+			delete(client),
+		},
 	}
 }
 
@@ -70,7 +75,7 @@ func create(client *clc.Client) cli.Command {
 			cli.StringFlag{Name: "storage", Usage: "standard or premium"},
 		},
 		Action: func(c *cli.Context) {
-			server := clc.Server{
+			server := server.Server{
 				Name:           c.String("name"),
 				CPU:            c.Int("cpu"),
 				MemoryGB:       c.Int("memory"),
@@ -92,7 +97,7 @@ func create(client *clc.Client) cli.Command {
 				return
 			}
 
-			resp, err := client.Server.Create(server, nil)
+			resp, err := client.Server.Create(server)
 			if err != nil {
 				fmt.Printf("failed to create %s", server.Name)
 				return

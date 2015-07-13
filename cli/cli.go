@@ -1,17 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/mikebeyer/clc-sdk/clc"
 	"github.com/mikebeyer/clc-sdk/cli/server"
 	"github.com/mikebeyer/clc-sdk/cli/status"
+	"github.com/mikebeyer/clc-sdk/sdk/api"
+	"github.com/mikebeyer/clc-sdk/sdk/clc"
 )
 
 func main() {
-	client := clc.New(clc.EnvConfig())
+	client := clc.New(api.EnvConfig())
 
 	app := cli.NewApp()
 	app.Name = "clc"
@@ -24,24 +24,8 @@ func main() {
 		},
 	}
 	app.Commands = []cli.Command{
-		test(client),
 		server.Commands(client),
 		status.Commands(client),
 	}
 	app.Run(os.Args)
-}
-
-func test(client *clc.Client) cli.Command {
-	return cli.Command{
-		Name:    "test",
-		Aliases: []string{"t"},
-		Action: func(c *cli.Context) {
-			token, err := client.Auth()
-			if err != nil {
-				fmt.Printf("test failed [%s]", err)
-				return
-			}
-			fmt.Printf("success: [%s]", token)
-		},
-	}
 }
