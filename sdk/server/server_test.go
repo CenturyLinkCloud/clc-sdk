@@ -18,10 +18,9 @@ var name = "va1testserver01"
 func TestGetServer(t *testing.T) {
 	assert := assert.New(t)
 
-	ms := mockServerAPI()
+	ms, service := mockServerAPI()
 	defer ms.Close()
 
-	service := service(ms.URL)
 	resp, err := service.Get(name)
 
 	assert.Nil(err)
@@ -31,10 +30,9 @@ func TestGetServer(t *testing.T) {
 func TestGetServerByUUID(t *testing.T) {
 	assert := assert.New(t)
 
-	ms := mockServerAPI()
+	ms, service := mockServerAPI()
 	defer ms.Close()
 
-	service := service(ms.URL)
 	resp, err := service.Get("5404cf5ece2042dc9f2ac16ab67416bb")
 
 	assert.Nil(err)
@@ -44,10 +42,9 @@ func TestGetServerByUUID(t *testing.T) {
 func TestCreateServer(t *testing.T) {
 	assert := assert.New(t)
 
-	ms := mockServerAPI()
+	ms, service := mockServerAPI()
 	defer ms.Close()
 
-	service := service(ms.URL)
 	server := server.Server{
 		Name:           "va1testserver01",
 		CPU:            1,
@@ -63,7 +60,7 @@ func TestCreateServer(t *testing.T) {
 	assert.Equal(server.Name, s.Server)
 }
 
-func mockServerAPI() *httptest.Server {
+func mockServerAPI() (*httptest.Server, *server.Service) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/servers/test", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
@@ -86,17 +83,22 @@ func mockServerAPI() *httptest.Server {
 		w.Header().Add("Content-Type", "application/json")
 		fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"},{"rel":"self","href":"/v2/servers/test/12345?uuid=True","id":"12345","verbs":["GET"]}]}`)
 	})
-	mux.HandleFunc("/servers/test/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-			return
-		}
 
-		if len(r.URL.Query()) == 0 {
-			server := &clc.ServerResponse{Name: name}
-			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(server)
-			return
+	mux.HandleFunc("/servers/test/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			if len(r.URL.Query()) == 0 {
+				server := &clc.ServerResponse{Name: name}
+				w.Header().Add("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(server)
+				return
+			}
+
+			if r.URL.Query().Get("uuid") == "true" {
+				server := &clc.ServerResponse{Name: "va1testserver01"}
+				w.Header().Add("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(server)
+				return
+			}
 		}
 
 		if r.URL.Query().Get("uuid") == "true" {
@@ -106,22 +108,21 @@ func mockServerAPI() *httptest.Server {
 			return
 		}
 
-		http.Error(w, "not found", http.StatusNotFound)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	})
 
-	return httptest.NewServer(mux)
-}
-func service(url string) *server.Service {
+	mockAPI := httptest.NewServer(mux)
 	config := api.Config{
 		User: api.User{
 			Username: "test.user",
 			Password: "s0s3cur3",
 		},
 		Alias:   "test",
-		BaseURL: url,
+		BaseURL: mockAPI.URL,
 	}
 
 	client := api.New(config)
 	client.Token = api.Token{Token: "validtoken"}
-	return server.New(client)
+
+	return mockAPI, server.New(client)
 }
