@@ -3,14 +3,14 @@ package api_test
 import (
 	"testing"
 
-	"github.com/mikebeyer/clc-sdk/clc"
+	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetID_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	links := clc.Links{clc.Link{Rel: "a", ID: "1"}}
+	links := api.Links{api.Link{Rel: "a", ID: "1"}}
 	ok, id := links.GetID("a")
 
 	assert.True(ok)
@@ -20,7 +20,7 @@ func TestGetID_Success(t *testing.T) {
 func TestGetID_Failure(t *testing.T) {
 	assert := assert.New(t)
 
-	links := clc.Links{clc.Link{Rel: "a", ID: "1"}}
+	links := api.Links{api.Link{Rel: "a", ID: "1"}}
 	ok, id := links.GetID("b")
 
 	assert.False(ok)

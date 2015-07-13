@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mikebeyer/clc-sdk/clc"
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/mikebeyer/clc-sdk/sdk/server"
 	"github.com/stretchr/testify/assert"
@@ -102,15 +101,14 @@ func mockServerAPI() (*httptest.Server, *server.Service) {
 			if len(r.URL.Query()) == 0 {
 				parts := strings.Split(r.RequestURI, "/")
 				name := parts[len(parts)-1]
-
-				server := &clc.ServerResponse{Name: name}
+				server := &server.Response{Name: name}
 				w.Header().Add("Content-Type", "application/json")
 				json.NewEncoder(w).Encode(server)
 				return
 			}
 
 			if r.URL.Query().Get("uuid") == "true" {
-				server := &clc.ServerResponse{Name: "va1testserver01"}
+				server := &server.Response{Name: "va1testserver01"}
 				w.Header().Add("Content-Type", "application/json")
 				json.NewEncoder(w).Encode(server)
 				return
