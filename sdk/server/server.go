@@ -88,9 +88,9 @@ type Response struct {
 			Internal string `json:"internal"`
 		} `json:"ipAddresses"`
 		AlertPolicies []struct {
-			ID    string `json:"id"`
-			Name  string `json:"name"`
-			Links []Link `json:"links"`
+			ID    string    `json:"id"`
+			Name  string    `json:"name"`
+			Links api.Links `json:"links"`
 		} `json:"alertPolicies"`
 		CPU               int    `json:"cpu"`
 		Diskcount         int    `json:"diskCount"`
@@ -109,8 +109,8 @@ type Response struct {
 			Path   string  `json:"path"`
 		} `json:"partitions"`
 		Snapshots []struct {
-			Name  string `json:"name"`
-			Links []Link `json:"links"`
+			Name  string    `json:"name"`
+			Links api.Links `json:"links"`
 		} `json:"snapshots"`
 		Customfields []Customfields `json:"customFields,omitempty"`
 	} `json:"details"`
@@ -122,13 +122,13 @@ type Response struct {
 		ModifiedDate string `json:"modifiedDate"`
 		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
-	Links Links `json:"links"`
+	Links api.Links `json:"links"`
 }
 
 type QueuedResponse struct {
-	Server   string `json:"server"`
-	IsQueued bool   `json:"isQueued"`
-	Links    Links  `json:"links"`
+	Server   string    `json:"server"`
+	IsQueued bool      `json:"isQueued"`
+	Links    api.Links `json:"links"`
 }
 
 type Customfields struct {
@@ -136,22 +136,4 @@ type Customfields struct {
 	Name         string `json:"name,omitempty"`
 	Value        string `json:"value,omitempty"`
 	Displayvalue string `json:"displayValue,omitempty"`
-}
-
-type Link struct {
-	Rel   string   `json:"rel,omitempty"`
-	Href  string   `json:"href,omitempty"`
-	ID    string   `json:"id,omitempty"`
-	Verbs []string `json:"verbs,omitempty"`
-}
-
-type Links []Link
-
-func (l Links) GetID(rel string) (bool, string) {
-	for _, v := range l {
-		if v.Rel == rel {
-			return true, v.ID
-		}
-	}
-	return false, ""
 }
