@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/mikebeyer/clc-sdk/cli/server"
-	"github.com/mikebeyer/clc-sdk/cli/status"
+	"github.com/mikebeyer/clc-sdk/clc/server"
+	"github.com/mikebeyer/clc-sdk/clc/status"
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/mikebeyer/clc-sdk/sdk/clc"
 )

@@ -34,11 +34,11 @@ end
 
 class Cli
   def self.build
-    `godep go build -o spec/cli ./cli`
+    `godep go build -o spec/clc ./clc`
   end
 
   def self.create(name)
-    json = JSON.parse(`./spec/cli server create -n #{name} -c 1 -m 1 -t standard -g 8aa8153a1ba24542908155da468bb71a -s UBUNTU-14-64-TEMPLATE`)
+    json = JSON.parse(`./spec/clc server create -n #{name} -c 1 -m 1 -t standard -g 8aa8153a1ba24542908155da468bb71a -s UBUNTU-14-64-TEMPLATE`)
     id = json['links'].select{ |val| val['rel'] == 'status' }.flat_map{ |val| val['id'] }[0]
     uuid = json['links'].select{ |val| val['rel'] == 'self' }.flat_map{ |val| val['id'] }[0]
     server = Server.new(uuid)
@@ -53,10 +53,10 @@ class Cli
   end
 
   def self.get(id)
-    JSON.parse(`./spec/cli server get #{id}`)
+    JSON.parse(`./spec/clc server get #{id}`)
   end
 
   def self.delete(name)
-    JSON.parse(`./spec/cli server delete #{name}`)
+    JSON.parse(`./spec/clc server delete #{name}`)
   end
 end
