@@ -25,6 +25,48 @@ func (s *Service) Get(name string) (*Response, error) {
 	return server, err
 }
 
+func (s *Service) Create(server Server, poll chan bool) (*QueuedResponse, error) {
+	if !server.Valid() {
+		return nil, fmt.Errorf("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
+	}
+
+	resp := &QueuedResponse{}
+	url := fmt.Sprintf("%s/servers/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	err := s.client.Post(url, server, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+type Server struct {
+	Name            string         `json:"name"`
+	Description     string         `json:"description,omitempty"`
+	GroupID         string         `json:"groupId"`
+	SourceServerID  string         `json:"sourceServerId"`
+	IsManagedOS     bool           `json:"isManagedOS,omitempty"`
+	PrimaryDNS      string         `json:"primaryDns,omitempty"`
+	SecondaryDNS    string         `json:"secondaryDns,omitempty"`
+	NetworkID       string         `json:"networkId,omitempty"`
+	IPaddress       string         `json:"ipAddress,omitempty"`
+	Password        string         `json:"password,omitempty"`
+	CPU             int            `json:"cpu"`
+	MemoryGB        int            `json:"memoryGB"`
+	Type            string         `json:"type"`
+	Storagetype     string         `json:"storageType,omitempty"`
+	Customfields    []Customfields `json:"customFields,omitempty"`
+	Additionaldisks []struct {
+		Path   string `json:"path"`
+		SizeGB int    `json:"sizeGB"`
+		Type   string `json:"type"`
+	} `json:"additionalDisks,omitempty"`
+}
+
+func (s *Server) Valid() bool {
+	return s.Name != "" && s.CPU != 0 && s.MemoryGB != 0 && s.GroupID != "" && s.SourceServerID != ""
+}
+
 type Response struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -74,6 +116,12 @@ type Response struct {
 		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
 	Links Links `json:"links"`
+}
+
+type QueuedResponse struct {
+	Server   string `json:"server"`
+	IsQueued bool   `json:"isQueued"`
+	Links    Links  `json:"links"`
 }
 
 type Customfields struct {
