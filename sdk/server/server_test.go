@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mikebeyer/clc-sdk/clc"
@@ -13,11 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var name = "va1testserver01"
-
 func TestGetServer(t *testing.T) {
 	assert := assert.New(t)
 
+	name := "va1testserver01"
 	ms, service := mockServerAPI()
 	defer ms.Close()
 
@@ -66,6 +66,7 @@ func TestDeleteServer(t *testing.T) {
 	ms, service := mockServerAPI()
 	defer ms.Close()
 
+	name := "va1testserver01"
 	server, err := service.Delete(name)
 
 	assert.Nil(err)
@@ -99,6 +100,9 @@ func mockServerAPI() (*httptest.Server, *server.Service) {
 	mux.HandleFunc("/servers/test/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			if len(r.URL.Query()) == 0 {
+				parts := strings.Split(r.RequestURI, "/")
+				name := parts[len(parts)-1]
+
 				server := &clc.ServerResponse{Name: name}
 				w.Header().Add("Content-Type", "application/json")
 				json.NewEncoder(w).Encode(server)
