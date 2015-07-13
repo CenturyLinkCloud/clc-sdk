@@ -20,9 +20,9 @@ func (s *Service) Get(name string) (*Response, error) {
 	if regexp.MustCompile("^[0-9a-f]{32}$").MatchString(name) {
 		url = fmt.Sprintf("%s?uuid=true", url)
 	}
-	server := &Response{}
-	err := s.client.Get(url, server)
-	return server, err
+	resp := &Response{}
+	err := s.client.Get(url, resp)
+	return resp, err
 }
 
 func (s *Service) Create(server Server, poll chan bool) (*QueuedResponse, error) {
