@@ -40,6 +40,13 @@ func (s *Service) Create(server Server, poll chan bool) (*QueuedResponse, error)
 	return resp, nil
 }
 
+func (s *Service) Delete(name string) (*QueuedResponse, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	resp := &QueuedResponse{}
+	err := s.client.Delete(url, resp)
+	return resp, err
+}
+
 type Server struct {
 	Name            string         `json:"name"`
 	Description     string         `json:"description,omitempty"`

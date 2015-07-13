@@ -60,6 +60,18 @@ func TestCreateServer(t *testing.T) {
 	assert.Equal(server.Name, s.Server)
 }
 
+func TestDeleteServer(t *testing.T) {
+	assert := assert.New(t)
+
+	ms, service := mockServerAPI()
+	defer ms.Close()
+
+	server, err := service.Delete(name)
+
+	assert.Nil(err)
+	assert.Equal(name, server.Server)
+}
+
 func mockServerAPI() (*httptest.Server, *server.Service) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/servers/test", func(w http.ResponseWriter, r *http.Request) {
@@ -101,10 +113,9 @@ func mockServerAPI() (*httptest.Server, *server.Service) {
 			}
 		}
 
-		if r.URL.Query().Get("uuid") == "true" {
-			server := &clc.ServerResponse{Name: "va1testserver01"}
+		if r.Method == "DELETE" {
 			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(server)
+			fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`)
 			return
 		}
 
