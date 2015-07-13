@@ -43,9 +43,9 @@ class Cli
     uuid = json['links'].select{ |val| val['rel'] == 'self' }.flat_map{ |val| val['id'] }[0]
     server = Server.new(uuid)
 
-    status = JSON.parse(`./spec/cli status get #{id}`)['status']
+    status = JSON.parse(`./spec/clc status get #{id}`)['status']
     until status == 'succeeded' || status == 'failed' do
-      status = JSON.parse(`./spec/cli status get #{id}`)['status']
+      status = JSON.parse(`./spec/clc status get #{id}`)['status']
       sleep 20
     end
     server.status = status
