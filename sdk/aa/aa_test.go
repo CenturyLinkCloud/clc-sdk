@@ -15,14 +15,14 @@ import (
 func TestGetAAPolicy(t *testing.T) {
 	assert := assert.New(t)
 
-	name := "12345"
+	id := "12345"
 	ms, service := mockStatusAPI()
 	defer ms.Close()
 
-	resp, err := service.Get(name)
+	resp, err := service.Get(id)
 
 	assert.Nil(err)
-	assert.Equal(name, resp.ID)
+	assert.Equal(id, resp.ID)
 }
 
 func TestGetAllAAPolicy(t *testing.T) {
@@ -54,21 +54,38 @@ func TestCreateAAPolicy(t *testing.T) {
 	assert.Equal(p.Name, resp.Name)
 }
 
+func TestDeleteAAPolicy(t *testing.T) {
+	assert := assert.New(t)
+
+	ms, service := mockStatusAPI()
+	defer ms.Close()
+
+	err := service.Delete("12345")
+
+	assert.Nil(err)
+}
+
 func mockStatusAPI() (*httptest.Server, *aa.Service) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/antiAffinityPolicies/test/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		if r.Method == "GET" {
+			parts := strings.Split(r.RequestURI, "/")
+			name := parts[len(parts)-1]
+			policy := aa.Policy{ID: name}
+
+			w.Header().Add("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(policy)
 			return
 		}
 
-		parts := strings.Split(r.RequestURI, "/")
-		name := parts[len(parts)-1]
-		policy := aa.Policy{ID: name}
+		if r.Method == "DELETE" {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(policy)
-
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
 	})
 	mux.HandleFunc("/antiAffinityPolicies/test", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {

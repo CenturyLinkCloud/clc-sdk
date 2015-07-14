@@ -58,30 +58,6 @@ func (c *Client) serialize(body interface{}) (io.Reader, error) {
 	return b, err
 }
 
-func (c *Client) auth() (string, error) {
-	url := fmt.Sprintf("%s/authentication/login", c.Config.BaseURL)
-	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(c.Config.User)
-	if err != nil {
-		return "", err
-	}
-
-	resp, err := http.Post(url, "application/json", b)
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf("http err: [%s]", resp.Status)
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&c.Token); err != nil {
-		return "", err
-	}
-
-	return c.Token.Token, nil
-}
-
 func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
 	if !c.Token.Valid() {
 		token, err := c.auth()
@@ -107,7 +83,34 @@ func (c *Client) do(method, url string, body io.Reader, resp interface{}) error 
 		return fmt.Errorf("http err: [%s]", res.Status)
 	}
 
+	if resp == nil {
+		return err
+	}
 	return json.NewDecoder(res.Body).Decode(resp)
+}
+
+func (c *Client) auth() (string, error) {
+	url := fmt.Sprintf("%s/authentication/login", c.Config.BaseURL)
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(c.Config.User)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.Post(url, "application/json", b)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode >= 400 {
+		return "", fmt.Errorf("http err: [%s]", resp.Status)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&c.Token); err != nil {
+		return "", err
+	}
+
+	return c.Token.Token, nil
 }
 
 type Config struct {

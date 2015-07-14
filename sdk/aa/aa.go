@@ -41,6 +41,12 @@ func (s *Service) Create(policy Policy) (*Policy, error) {
 	return resp, err
 }
 
+func (s *Service) Delete(id string) error {
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	err := s.client.Delete(url, nil)
+	return err
+}
+
 type Policy struct {
 	ID       string    `json:"id,omitempty"`
 	Name     string    `json:"name,omitempty"`
