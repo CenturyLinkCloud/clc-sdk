@@ -20,16 +20,35 @@ type Service struct {
 	PollInterval time.Duration
 }
 
-func (s *Service) Get(id string) (*Response, error) {
+func (s *Service) Get(id string) (*Policy, error) {
 	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
-	status := &Response{}
-	err := s.client.Get(url, status)
-	return status, err
+	policy := &Policy{}
+	err := s.client.Get(url, policy)
+	return policy, err
 }
 
-type Response struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Location string    `json:"location"`
-	Links    api.Links `json:"links"`
+func (s *Service) GetAll() (*Policies, error) {
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	policies := &Policies{}
+	err := s.client.Get(url, policies)
+	return policies, err
+}
+
+func (s *Service) Create(policy Policy) (*Policy, error) {
+	resp := &Policy{}
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	err := s.client.Post(url, policy, resp)
+	return resp, err
+}
+
+type Policy struct {
+	ID       string    `json:"id,omitempty"`
+	Name     string    `json:"name,omitempty"`
+	Location string    `json:"location,omitempty"`
+	Links    api.Links `json:"links,omitempty"`
+}
+
+type Policies struct {
+	Items []Policy  `json:"items,omitempty"`
+	Links api.Links `json:"links,omitempty"`
 }
