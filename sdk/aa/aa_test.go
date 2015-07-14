@@ -43,15 +43,13 @@ func TestCreateAAPolicy(t *testing.T) {
 	ms, service := mockStatusAPI()
 	defer ms.Close()
 
-	p := aa.Policy{
-		Name:     "New AA Policy",
-		Location: "va1",
-	}
+	name := "New AA Policy"
+	location := "va1"
 
-	resp, err := service.Create(p)
+	resp, err := service.Create(name, location)
 
 	assert.Nil(err)
-	assert.Equal(p.Name, resp.Name)
+	assert.Equal(name, resp.Name)
 }
 
 func TestUpdateAAPolicy(t *testing.T) {

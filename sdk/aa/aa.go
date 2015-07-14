@@ -34,7 +34,8 @@ func (s *Service) GetAll() (*Policies, error) {
 	return policies, err
 }
 
-func (s *Service) Create(policy Policy) (*Policy, error) {
+func (s *Service) Create(name, location string) (*Policy, error) {
+	policy := &Policy{Name: name, Location: location}
 	resp := &Policy{}
 	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.client.Config.BaseURL, s.client.Config.Alias)
 	err := s.client.Post(url, policy, resp)
