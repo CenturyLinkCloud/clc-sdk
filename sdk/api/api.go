@@ -36,6 +36,14 @@ func (c *Client) Post(url string, body, resp interface{}) error {
 	return c.do("POST", url, b, resp)
 }
 
+func (c *Client) Put(url string, body, resp interface{}) error {
+	b, err := c.serialize(body)
+	if err != nil {
+		return err
+	}
+	return c.do("PUT", url, b, resp)
+}
+
 func (c *Client) Patch(url string, body, resp interface{}) error {
 	b, err := c.serialize(body)
 	if err != nil {

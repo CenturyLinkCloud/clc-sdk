@@ -41,6 +41,14 @@ func (s *Service) Create(policy Policy) (*Policy, error) {
 	return resp, err
 }
 
+func (s *Service) Update(id string, name string) (*Policy, error) {
+	policy := &Policy{Name: name}
+	resp := &Policy{}
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	err := s.client.Put(url, policy, resp)
+	return resp, err
+}
+
 func (s *Service) Delete(id string) error {
 	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
 	err := s.client.Delete(url, nil)

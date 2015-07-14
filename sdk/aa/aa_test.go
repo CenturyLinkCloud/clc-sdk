@@ -54,6 +54,20 @@ func TestCreateAAPolicy(t *testing.T) {
 	assert.Equal(p.Name, resp.Name)
 }
 
+func TestUpdateAAPolicy(t *testing.T) {
+	assert := assert.New(t)
+
+	id := "12345"
+	name := "My New AA Policy"
+	ms, service := mockStatusAPI()
+	defer ms.Close()
+
+	resp, err := service.Update(id, name)
+
+	assert.Nil(err)
+	assert.Equal(name, resp.Name)
+}
+
 func TestDeleteAAPolicy(t *testing.T) {
 	assert := assert.New(t)
 
@@ -81,6 +95,25 @@ func mockStatusAPI() (*httptest.Server, *aa.Service) {
 		if r.Method == "DELETE" {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if r.Method == "PUT" {
+			parts := strings.Split(r.RequestURI, "/")
+			id := parts[len(parts)-1]
+
+			policy := &aa.Policy{}
+			if err := json.NewDecoder(r.Body).Decode(policy); err != nil {
+				http.Error(w, "internal server error", http.StatusInternalServerError)
+				return
+			}
+
+			policy.ID = id
+			policy.Location = "va1"
+			policy.Links = api.Links([]api.Link{api.Link{Rel: "self"}})
+
+			w.Header().Add("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(policy)
 			return
 		}
 
