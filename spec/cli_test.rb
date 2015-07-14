@@ -6,6 +6,35 @@ describe 'clc cli' do
     Cli.build
   end
 
+  it 'lists all policies' do
+    policies = Cli.get_all_aa_policies
+    
+    expect(policies['links'][0]['href']).to eq("/v2/antiAffinityPolicies/#{ENV["CLC_ALIAS"]}")
+  end
+
+  it 'gets a specific policy' do
+    policies = Cli.get_all_aa_policies
+    expectedPolicy = policies['items'][0]
+    policy = Cli.get_aa_policy(expectedPolicy['id'])
+
+    expect(policy['name']).to eq(expectedPolicy['name'])
+  end
+
+  it 'creates an aa policy' do
+    name = 'sample'
+    policy = Cli.create_policy(name, 'va1')
+
+    expect(policy['name']).to eq(name)
+    Cli.delete_policy(policy['id'])
+  end
+
+  it 'deletes an aa policy' do
+    policy = Cli.create_policy('sample', 'va1') 
+    msg = Cli.delete_policy(policy['id'])
+
+    expect(msg).to eq("deleted aa policy: #{policy['id']}\n")
+  end
+
   it 'creates, fetches and deletes a server' do
     server = Cli.create_server('sample')
 
@@ -35,6 +64,22 @@ end
 class Cli
   def self.build
     `godep go build -o spec/clc ./clc`
+  end
+
+  def self.get_all_aa_policies
+    JSON.parse(`./spec/clc aa get`)
+  end
+
+  def self.get_aa_policy(id)
+    JSON.parse(`./spec/clc aa get #{id}`)
+  end
+
+  def self.create_policy(name, loc)
+    JSON.parse(`./spec/clc aa c -n #{name} -l #{loc}`)
+  end
+
+  def self.delete_policy(id)
+    `./spec/clc aa d #{id}`
   end
 
   def self.create_server(name)
