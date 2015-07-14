@@ -7,17 +7,17 @@ describe 'clc cli' do
   end
 
   it 'creates, fetches and deletes a server' do
-    server = Cli.create('sample')
+    server = Cli.create_server('sample')
 
     expect(server.status).to eq('succeeded')
 
-    json = Cli.get(server.uuid)
+    json = Cli.get_server(server.uuid)
 
     expect(json['groupId']).to eq('8aa8153a1ba24542908155da468bb71a')
     expect(json['details']['cpu']).to eq(1)
     expect(json['details']['memoryMB']).to eq(1024)
 
-    delete = Cli.delete(json['id'])
+    delete = Cli.delete_server(json['id'])
 
     expect(delete['server']).to eq(json['id'])
   end
@@ -37,7 +37,7 @@ class Cli
     `godep go build -o spec/clc ./clc`
   end
 
-  def self.create(name)
+  def self.create_server(name)
     json = JSON.parse(`./spec/clc server create -n #{name} -c 1 -m 1 -t standard -g 8aa8153a1ba24542908155da468bb71a -s UBUNTU-14-64-TEMPLATE`)
     id = json['links'].select{ |val| val['rel'] == 'status' }.flat_map{ |val| val['id'] }[0]
     uuid = json['links'].select{ |val| val['rel'] == 'self' }.flat_map{ |val| val['id'] }[0]
@@ -52,11 +52,11 @@ class Cli
     server
   end
 
-  def self.get(id)
+  def self.get_server(id)
     JSON.parse(`./spec/clc server get #{id}`)
   end
 
-  def self.delete(name)
+  def self.delete_server(name)
     JSON.parse(`./spec/clc server delete #{name}`)
   end
 end
