@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/mikebeyer/clc-sdk/clc/aa"
 	"github.com/mikebeyer/clc-sdk/clc/server"
 	"github.com/mikebeyer/clc-sdk/clc/status"
 	"github.com/mikebeyer/clc-sdk/sdk/api"
@@ -26,6 +27,7 @@ func main() {
 	app.Commands = []cli.Command{
 		server.Commands(client),
 		status.Commands(client),
+		aa.Commands(client),
 	}
 	app.Run(os.Args)
 }
