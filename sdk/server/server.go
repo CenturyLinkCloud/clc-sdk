@@ -54,6 +54,28 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	return resp, err
 }
 
+func (s *Service) AddPublicIP(id string, ip PublicIP) (*QueuedResponse, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	resp := &QueuedResponse{}
+	err := s.client.Post(url, ip, resp)
+	return resp, err
+}
+
+type PublicIP struct {
+	Ports              []Port              `json:"ports"`
+	SourceRestrictions []SourceRestriction `json:"sourceRestrictions"`
+}
+
+type Port struct {
+	Protocol string `json:"protocol"`
+	Port     int    `json:"port"`
+	PortTo   int    `json:"portTo"`
+}
+
+type SourceRestriction struct {
+	CIDR string `json:"cidr"`
+}
+
 type CPU int
 
 func (c CPU) Serialize() ServerUpdate {

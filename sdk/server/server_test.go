@@ -17,7 +17,7 @@ func TestGetServer(t *testing.T) {
 	assert := assert.New(t)
 
 	name := "va1testserver01"
-	ms, service := mockServerAPI()
+	ms, service := mockServerAPI(nil)
 	defer ms.Close()
 
 	resp, err := service.Get(name)
@@ -29,7 +29,7 @@ func TestGetServer(t *testing.T) {
 func TestGetServerByUUID(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI()
+	ms, service := mockServerAPI(nil)
 	defer ms.Close()
 
 	resp, err := service.Get("5404cf5ece2042dc9f2ac16ab67416bb")
@@ -41,7 +41,7 @@ func TestGetServerByUUID(t *testing.T) {
 func TestCreateServer(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI()
+	ms, service := mockServerAPI(nil)
 	defer ms.Close()
 
 	server := server.Server{
@@ -62,7 +62,7 @@ func TestCreateServer(t *testing.T) {
 func TestUpdateServer_UpdateCPU(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI()
+	ms, service := mockServerAPI(nil)
 	defer ms.Close()
 
 	name := "va1testserver01"
@@ -76,7 +76,7 @@ func TestUpdateServer_UpdateCPU(t *testing.T) {
 func TestDeleteServer(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI()
+	ms, service := mockServerAPI(nil)
 	defer ms.Close()
 
 	name := "va1testserver01"
@@ -86,7 +86,25 @@ func TestDeleteServer(t *testing.T) {
 	assert.Equal(name, server.Server)
 }
 
-func mockServerAPI() (*httptest.Server, *server.Service) {
+func TestAddPublicIP(t *testing.T) {
+	assert := assert.New(t)
+
+	name := "va1testserver01"
+	ip := server.PublicIP{}
+	ip.Ports = []server.Port{server.Port{Protocol: "TCP", Port: 8080}}
+
+	req := server.PublicIP{}
+	ms, service := mockServerAPI(&req)
+	defer ms.Close()
+
+	resp, err := service.AddPublicIP(name, ip)
+
+	assert.Nil(err)
+	assert.Equal(name, resp.Server)
+	assert.Equal(req.Ports[0].Port, 8080)
+}
+
+func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/servers/test", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
@@ -157,6 +175,14 @@ func mockServerAPI() (*httptest.Server, *server.Service) {
 			return
 		}
 
+		if r.Method == "POST" && strings.HasSuffix(r.URL.Path, "publicIPAddresses") {
+			json.NewDecoder(r.Body).Decode(req)
+			parts := strings.Split(r.RequestURI, "/")
+			name := parts[len(parts)-2]
+			w.Header().Add("Content-Type", "application/json")
+			fmt.Fprint(w, fmt.Sprintf(`{"server":"%s","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`, name))
+			return
+		}
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	})
 
