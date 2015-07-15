@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/mikebeyer/clc-sdk/sdk/clc"
@@ -22,6 +24,7 @@ func Commands(client *clc.Client) cli.Command {
 			get(client),
 			create(client),
 			delete(client),
+			publicIP(client),
 		},
 	}
 }
@@ -137,4 +140,58 @@ func delete(client *clc.Client) cli.Command {
 			fmt.Printf("%s\n", b)
 		},
 	}
+}
+
+func publicIP(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "public-ip",
+		Aliases: []string{"ip"},
+		Usage:   "add public ip to server",
+		Flags: []cli.Flag{
+			cli.StringSliceFlag{Name: "tcp"},
+			cli.StringSliceFlag{Name: "udp"},
+			cli.StringSliceFlag{Name: "cidr"},
+		},
+		Action: func(c *cli.Context) {
+			ports := make([]server.Port, 0)
+			tcps, err := parsePort("tcp", c.StringSlice("tcp"))
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			ports = append(ports, tcps...)
+			udps, err := parsePort("udp", c.StringSlice("udp"))
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			ports = append(ports, udps...)
+			ip := server.PublicIP{Ports: ports}
+			b, err := json.MarshalIndent(ip, "", "  ")
+			if err != nil {
+				log.Printf("%s", err)
+				os.Exit(1)
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func parsePort(protocol string, list []string) ([]server.Port, error) {
+	ports := make([]server.Port, 0)
+	for _, v := range list {
+		r := strings.Split(v, ":")
+		port, err := strconv.Atoi(r[0])
+		if err != nil {
+			return ports, fmt.Errorf("invalid port provided %s", r[0])
+		}
+		if len(r) > 1 {
+			to, err := strconv.Atoi(r[1])
+			if err != nil {
+				return ports, fmt.Errorf("invalid port provided %s", r[0])
+			}
+			ports = append(ports, server.Port{Protocol: protocol, Port: port, PortTo: to})
+		} else {
+			ports = append(ports, server.Port{Protocol: protocol, Port: port})
+		}
+	}
+	return ports, nil
 }

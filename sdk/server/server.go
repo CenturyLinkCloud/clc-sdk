@@ -63,13 +63,13 @@ func (s *Service) AddPublicIP(id string, ip PublicIP) (*QueuedResponse, error) {
 
 type PublicIP struct {
 	Ports              []Port              `json:"ports"`
-	SourceRestrictions []SourceRestriction `json:"sourceRestrictions"`
+	SourceRestrictions []SourceRestriction `json:"sourceRestrictions,omitempty"`
 }
 
 type Port struct {
 	Protocol string `json:"protocol"`
 	Port     int    `json:"port"`
-	PortTo   int    `json:"portTo"`
+	PortTo   int    `json:"portTo,omitempty"`
 }
 
 type SourceRestriction struct {
