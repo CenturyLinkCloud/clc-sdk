@@ -22,9 +22,16 @@ type Service struct {
 
 func (s *Service) Get(id string) (*Response, error) {
 	url := fmt.Sprintf("%s/datacenters/%s/%s?groupLinks=true", s.client.Config.BaseURL, s.client.Config.Alias, id)
-	status := &Response{}
-	err := s.client.Get(url, status)
-	return status, err
+	dc := &Response{}
+	err := s.client.Get(url, dc)
+	return dc, err
+}
+
+func (s *Service) GetAll() ([]*Response, error) {
+	url := fmt.Sprintf("%s/datacenters/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	dcs := make([]*Response, 0)
+	err := s.client.Get(url, &dcs)
+	return dcs, err
 }
 
 type Response struct {

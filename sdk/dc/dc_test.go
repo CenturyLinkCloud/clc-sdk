@@ -2,6 +2,7 @@ package dc_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -25,6 +26,17 @@ func TestGetDatacenter(t *testing.T) {
 	assert.Equal(name, resp.ID)
 }
 
+func TestGetDatacenters(t *testing.T) {
+	assert := assert.New(t)
+
+	ms, service := mockStatusAPI()
+	defer ms.Close()
+
+	_, err := service.GetAll()
+
+	assert.Nil(err)
+}
+
 func mockStatusAPI() (*httptest.Server, *dc.Service) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/datacenters/test/", func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +54,19 @@ func mockStatusAPI() (*httptest.Server, *dc.Service) {
 		name := strings.Split(parts[len(parts)-1], "?")[0]
 		dc := dc.Response{ID: name}
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(dc)
+		if err := json.NewEncoder(w).Encode(dc); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	mux.HandleFunc("/datacenters/test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprint(w, `[{"id":"dc1","name":"test datacenter","links":[{"rel":"self","href":"/v2/datacenters/test/dc1"}]}]`)
 	})
 
 	mockAPI := httptest.NewServer(mux)
