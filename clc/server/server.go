@@ -146,11 +146,63 @@ func publicIP(client *clc.Client) cli.Command {
 	return cli.Command{
 		Name:    "public-ip",
 		Aliases: []string{"ip"},
+		Usage:   "manage public ips",
+		Subcommands: []cli.Command{
+			createIP(client),
+			getIP(client),
+		},
+	}
+}
+
+func getIP(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "get",
+		Aliases: []string{"g"},
+		Usage:   "get public ip",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "name, n", Usage: "server name [required]"},
+			cli.StringFlag{Name: "ip", Usage: "ip [required]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("name") == "" || c.String("ip") == "" {
+				fmt.Println("usage: missing required flags [--help for additional information]")
+				return errors.New("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			resp, err := client.Server.GetPublicIP(c.String("name"), c.String("ip"))
+			if err != nil {
+				fmt.Printf("err %s\n", err)
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				fmt.Printf("%s", err)
+				return
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func createIP(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "add",
+		Aliases: []string{"a"},
 		Usage:   "add public ip to server",
 		Flags: []cli.Flag{
-			cli.StringSliceFlag{Name: "tcp"},
-			cli.StringSliceFlag{Name: "udp"},
-			cli.StringSliceFlag{Name: "cidr"},
+			cli.StringFlag{Name: "name, n", Usage: "server name [required]"},
+			cli.StringSliceFlag{Name: "tcp", Usage: "provide a port [8080] or a port range [8080:8082]"},
+			cli.StringSliceFlag{Name: "udp", Usage: "provide a port [8080] or a port range [8080:8082]"},
+			cli.StringSliceFlag{Name: "restriction, r", Usage: "provide an ip subnet to restrict to access the public ip [ex. 10.0.0.1/24 (must be cidr notation)]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("name") == "" {
+				fmt.Println("usage: --name flag required")
+				return errors.New("")
+			}
+			return nil
 		},
 		Action: func(c *cli.Context) {
 			ports := make([]server.Port, 0)
@@ -164,11 +216,21 @@ func publicIP(client *clc.Client) cli.Command {
 				fmt.Println(err.Error())
 			}
 			ports = append(ports, udps...)
+			restrictions := make([]server.SourceRestriction, 0)
+			for _, v := range c.StringSlice("restriction") {
+				restrictions = append(restrictions, server.SourceRestriction{CIDR: v})
+			}
+
 			ip := server.PublicIP{Ports: ports}
-			b, err := json.MarshalIndent(ip, "", "  ")
+			resp, err := client.Server.AddPublicIP(c.String("name"), ip)
 			if err != nil {
-				log.Printf("%s", err)
-				os.Exit(1)
+				fmt.Printf("err %s\n", err)
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				fmt.Printf("%s", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},
