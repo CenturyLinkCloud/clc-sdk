@@ -100,8 +100,24 @@ func TestAddPublicIP(t *testing.T) {
 	resp, err := service.AddPublicIP(name, ip)
 
 	assert.Nil(err)
-	assert.Equal(name, resp.Server)
-	assert.Equal(req.Ports[0].Port, 8080)
+	assert.Equal("status", resp.Rel)
+	assert.Equal(8080, req.Ports[0].Port)
+}
+
+func TestGetPublicIP(t *testing.T) {
+	assert := assert.New(t)
+
+	ip := "10.0.0.1"
+	name := "va1testserver01"
+
+	ms, service := mockServerAPI(nil)
+	defer ms.Close()
+
+	resp, err := service.GetPublicIP(name, ip)
+
+	assert.Nil(err)
+	assert.Equal(ip, resp.InternalIP)
+	assert.Equal(1, len(resp.Ports))
 }
 
 func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
@@ -126,10 +142,19 @@ func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 
 		w.Header().Add("Content-Type", "application/json")
 		fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"},{"rel":"self","href":"/v2/servers/test/12345?uuid=True","id":"12345","verbs":["GET"]}]}`)
+		return
 	})
 
 	mux.HandleFunc("/servers/test/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
+			if strings.Contains(r.URL.Path, "publicIPAddresses") {
+				parts := strings.Split(r.RequestURI, "/")
+				ip := parts[len(parts)-1]
+				w.Header().Add("Content-Type", "application/json")
+				fmt.Fprintf(w, fmt.Sprintf(`{"internalIPAddress":"%s","ports":[{"protocol":"TCP","port":80}]}`, ip))
+				return
+			}
+
 			if len(r.URL.Query()) == 0 {
 				parts := strings.Split(r.RequestURI, "/")
 				name := parts[len(parts)-1]
@@ -145,6 +170,8 @@ func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 				json.NewEncoder(w).Encode(server)
 				return
 			}
+
+			http.Error(w, "bad request", http.StatusBadRequest)
 		}
 
 		if r.Method == "DELETE" {
@@ -180,7 +207,7 @@ func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 			parts := strings.Split(r.RequestURI, "/")
 			name := parts[len(parts)-2]
 			w.Header().Add("Content-Type", "application/json")
-			fmt.Fprint(w, fmt.Sprintf(`{"server":"%s","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`, name))
+			fmt.Fprint(w, fmt.Sprintf(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`, name))
 			return
 		}
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)

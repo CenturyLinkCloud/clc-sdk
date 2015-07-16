@@ -54,15 +54,23 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	return resp, err
 }
 
-func (s *Service) AddPublicIP(id string, ip PublicIP) (*QueuedResponse, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.client.Config.BaseURL, s.client.Config.Alias, id)
-	resp := &QueuedResponse{}
+func (s *Service) AddPublicIP(name string, ip PublicIP) (*IPResponse, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	resp := &IPResponse{}
 	err := s.client.Post(url, ip, resp)
 	return resp, err
 }
 
+func (s *Service) GetPublicIP(name string, ip string) (*PublicIP, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.client.Config.BaseURL, s.client.Config.Alias, name, ip)
+	resp := &PublicIP{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
 type PublicIP struct {
-	Ports              []Port              `json:"ports"`
+	InternalIP         string              `json:"internalIPAddress,omitempty"`
+	Ports              []Port              `json:"ports,omitempty"`
 	SourceRestrictions []SourceRestriction `json:"sourceRestrictions,omitempty"`
 }
 
@@ -74,6 +82,12 @@ type Port struct {
 
 type SourceRestriction struct {
 	CIDR string `json:"cidr"`
+}
+
+type IPResponse struct {
+	Id   string `json:"id"`
+	Rel  string `json:"rel"`
+	Href string `json:"href"`
 }
 
 type CPU int
