@@ -54,6 +54,13 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	return resp, err
 }
 
+func (s *Service) GetPublicIP(name string, ip string) (*PublicIP, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.client.Config.BaseURL, s.client.Config.Alias, name, ip)
+	resp := &PublicIP{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
 func (s *Service) AddPublicIP(name string, ip PublicIP) (*IPResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.client.Config.BaseURL, s.client.Config.Alias, name)
 	resp := &IPResponse{}
@@ -61,10 +68,10 @@ func (s *Service) AddPublicIP(name string, ip PublicIP) (*IPResponse, error) {
 	return resp, err
 }
 
-func (s *Service) GetPublicIP(name string, ip string) (*PublicIP, error) {
+func (s *Service) DeletePublicIP(name, ip string) (*IPResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.client.Config.BaseURL, s.client.Config.Alias, name, ip)
-	resp := &PublicIP{}
-	err := s.client.Get(url, resp)
+	resp := &IPResponse{}
+	err := s.client.Delete(url, resp)
 	return resp, err
 }
 
@@ -85,7 +92,7 @@ type SourceRestriction struct {
 }
 
 type IPResponse struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Rel  string `json:"rel"`
 	Href string `json:"href"`
 }

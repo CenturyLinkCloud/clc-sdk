@@ -120,6 +120,21 @@ func TestGetPublicIP(t *testing.T) {
 	assert.Equal(1, len(resp.Ports))
 }
 
+func TestDeletePublicIP(t *testing.T) {
+	assert := assert.New(t)
+
+	ip := "10.0.0.1"
+	name := "va1testserver01"
+
+	ms, service := mockServerAPI(nil)
+	defer ms.Close()
+
+	resp, err := service.DeletePublicIP(name, ip)
+
+	assert.Nil(err)
+	assert.NotEmpty(resp.ID)
+}
+
 func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/servers/test", func(w http.ResponseWriter, r *http.Request) {
@@ -175,6 +190,12 @@ func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 		}
 
 		if r.Method == "DELETE" {
+			if strings.Contains(r.URL.Path, "publicIPAddresses") {
+				w.Header().Add("Content-Type", "application/json")
+				fmt.Fprint(w, `{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`)
+				return
+			}
+
 			parts := strings.Split(r.RequestURI, "/")
 			name := parts[len(parts)-1]
 			w.Header().Add("Content-Type", "application/json")
@@ -204,10 +225,8 @@ func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
 
 		if r.Method == "POST" && strings.HasSuffix(r.URL.Path, "publicIPAddresses") {
 			json.NewDecoder(r.Body).Decode(req)
-			parts := strings.Split(r.RequestURI, "/")
-			name := parts[len(parts)-2]
 			w.Header().Add("Content-Type", "application/json")
-			fmt.Fprint(w, fmt.Sprintf(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`, name))
+			fmt.Fprint(w, `{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`)
 			return
 		}
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)

@@ -148,8 +148,9 @@ func publicIP(client *clc.Client) cli.Command {
 		Aliases: []string{"ip"},
 		Usage:   "manage public ips",
 		Subcommands: []cli.Command{
-			createIP(client),
 			getIP(client),
+			createIP(client),
+			deleteIP(client),
 		},
 	}
 }
@@ -256,4 +257,36 @@ func parsePort(protocol string, list []string) ([]server.Port, error) {
 		}
 	}
 	return ports, nil
+}
+
+func deleteIP(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "delete",
+		Aliases: []string{"d"},
+		Usage:   "delete public ip",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "name, n", Usage: "server name [required]"},
+			cli.StringFlag{Name: "ip", Usage: "ip [required]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("name") == "" || c.String("ip") == "" {
+				fmt.Println("usage: missing required flags [--help for additional information]")
+				return errors.New("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			resp, err := client.Server.DeletePublicIP(c.String("name"), c.String("ip"))
+			if err != nil {
+				fmt.Printf("err %s\n", err)
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				fmt.Printf("%s", err)
+				return
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
 }
