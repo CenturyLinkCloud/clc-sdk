@@ -2,7 +2,7 @@ VERSION=0.1
 
 .PHONY : test uats
 test: 
-	godep go test -v ./sdk/...
+	godep go test ./sdk/...
 uats:
 	BUNDLE_GEMFILE=spec/Gemfile bundle exec rspec spec/*.rb
 build:

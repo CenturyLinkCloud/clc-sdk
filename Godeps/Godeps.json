@@ -15,7 +15,15 @@
 			"Rev": "b6ce30ccdcad3ed9d5ca80329829f5aeaa856e99"
 		},
 		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
+		},
+		{
 			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "e4ec8152c15fc46bd5056ce65997a07c7d415325"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/mock",
 			"Rev": "e4ec8152c15fc46bd5056ce65997a07c7d415325"
 		}
 	]
