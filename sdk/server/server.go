@@ -7,16 +7,20 @@ import (
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 )
 
-func New(client *api.Client) *Service {
-	return &Service{client}
+func New(client api.HTTP) *Service {
+	return &Service{
+		client: client,
+		config: client.Config(),
+	}
 }
 
 type Service struct {
-	client *api.Client
+	client api.HTTP
+	config *api.Config
 }
 
 func (s *Service) Get(name string) (*Response, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
 	if regexp.MustCompile("^[0-9a-f]{32}$").MatchString(name) {
 		url = fmt.Sprintf("%s?uuid=true", url)
 	}
@@ -31,14 +35,14 @@ func (s *Service) Create(server Server) (*QueuedResponse, error) {
 	}
 
 	resp := &QueuedResponse{}
-	url := fmt.Sprintf("%s/servers/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	url := fmt.Sprintf("%s/servers/%s", s.config.BaseURL, s.config.Alias)
 	err := s.client.Post(url, server, resp)
 	return resp, err
 }
 
 func (s *Service) Update(name string, patches ...ServerPatch) (*QueuedResponse, error) {
 	resp := &QueuedResponse{}
-	url := fmt.Sprintf("%s/servers/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
 	var updates []ServerUpdate
 	for _, v := range patches {
 		updates = append(updates, v.Serialize())
@@ -48,28 +52,28 @@ func (s *Service) Update(name string, patches ...ServerPatch) (*QueuedResponse, 
 }
 
 func (s *Service) Delete(name string) (*QueuedResponse, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
 	resp := &QueuedResponse{}
 	err := s.client.Delete(url, resp)
 	return resp, err
 }
 
 func (s *Service) GetPublicIP(name string, ip string) (*PublicIP, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.client.Config.BaseURL, s.client.Config.Alias, name, ip)
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.config.BaseURL, s.config.Alias, name, ip)
 	resp := &PublicIP{}
 	err := s.client.Get(url, resp)
 	return resp, err
 }
 
 func (s *Service) AddPublicIP(name string, ip PublicIP) (*IPResponse, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.client.Config.BaseURL, s.client.Config.Alias, name)
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.config.BaseURL, s.config.Alias, name)
 	resp := &IPResponse{}
 	err := s.client.Post(url, ip, resp)
 	return resp, err
 }
 
 func (s *Service) DeletePublicIP(name, ip string) (*IPResponse, error) {
-	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.client.Config.BaseURL, s.client.Config.Alias, name, ip)
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.config.BaseURL, s.config.Alias, name, ip)
 	resp := &IPResponse{}
 	err := s.client.Delete(url, resp)
 	return resp, err

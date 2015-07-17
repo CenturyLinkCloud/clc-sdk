@@ -12,7 +12,7 @@ import (
 
 func New(config Config) *Client {
 	return &Client{
-		Config: config,
+		config: config,
 		client: http.DefaultClient,
 	}
 }
@@ -23,18 +23,18 @@ type HTTP interface {
 	Put(url string, body, resp interface{}) error
 	Patch(url string, body, resp interface{}) error
 	Delete(url string, resp interface{}) error
-	GetConfig() *Config
+	Config() *Config
 }
 
 type Client struct {
-	Config Config
+	config Config
 	Token  Token
 
 	client *http.Client
 }
 
-func (c *Client) GetConfig() *Config {
-	return &c.Config
+func (c *Client) Config() *Config {
+	return &c.config
 }
 
 func (c *Client) Get(url string, resp interface{}) error {
@@ -111,9 +111,9 @@ func (c *Client) do(method, url string, body io.Reader, resp interface{}) error 
 }
 
 func (c *Client) auth() (string, error) {
-	url := fmt.Sprintf("%s/authentication/login", c.Config.BaseURL)
+	url := fmt.Sprintf("%s/authentication/login", c.config.BaseURL)
 	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(c.Config.User)
+	err := json.NewEncoder(b).Encode(c.config.User)
 	if err != nil {
 		return "", err
 	}

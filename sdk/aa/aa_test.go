@@ -10,14 +10,16 @@ import (
 	"github.com/mikebeyer/clc-sdk/sdk/aa"
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetAAPolicy(t *testing.T) {
 	assert := assert.New(t)
 
-	id := "12345"
 	ms, service := mockStatusAPI()
 	defer ms.Close()
+
+	id := "12345"
 
 	resp, err := service.Get(id)
 
@@ -75,6 +77,50 @@ func TestDeleteAAPolicy(t *testing.T) {
 	err := service.Delete("12345")
 
 	assert.Nil(err)
+}
+
+func NewMockClient() *MockClient {
+	return &MockClient{}
+}
+
+type MockClient struct {
+	mock.Mock
+}
+
+func (m *MockClient) Get(url string, resp interface{}) error {
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Post(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Put(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Patch(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Delete(url string, resp interface{}) error {
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) GetConfig() *api.Config {
+	return &api.Config{
+		User: api.User{
+			Username: "test.user",
+			Password: "s0s3cur3",
+		},
+		Alias:   "test",
+		BaseURL: "http://localhost/v2",
+	}
 }
 
 func mockStatusAPI() (*httptest.Server, *aa.Service) {

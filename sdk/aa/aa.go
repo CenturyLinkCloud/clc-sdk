@@ -2,33 +2,31 @@ package aa
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 )
 
-func New(client *api.Client) *Service {
+func New(client api.HTTP) *Service {
 	return &Service{
-		client:       client,
-		PollInterval: 30 * time.Second,
+		client: client,
+		config: client.Config(),
 	}
 }
 
 type Service struct {
-	client *api.Client
-
-	PollInterval time.Duration
+	client api.HTTP
+	config *api.Config
 }
 
 func (s *Service) Get(id string) (*Policy, error) {
-	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
 	policy := &Policy{}
 	err := s.client.Get(url, policy)
 	return policy, err
 }
 
 func (s *Service) GetAll() (*Policies, error) {
-	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.config.BaseURL, s.config.Alias)
 	policies := &Policies{}
 	err := s.client.Get(url, policies)
 	return policies, err
@@ -37,7 +35,7 @@ func (s *Service) GetAll() (*Policies, error) {
 func (s *Service) Create(name, location string) (*Policy, error) {
 	policy := &Policy{Name: name, Location: location}
 	resp := &Policy{}
-	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s", s.config.BaseURL, s.config.Alias)
 	err := s.client.Post(url, policy, resp)
 	return resp, err
 }
@@ -45,13 +43,13 @@ func (s *Service) Create(name, location string) (*Policy, error) {
 func (s *Service) Update(id string, name string) (*Policy, error) {
 	policy := &Policy{Name: name}
 	resp := &Policy{}
-	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
 	err := s.client.Put(url, policy, resp)
 	return resp, err
 }
 
 func (s *Service) Delete(id string) error {
-	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	url := fmt.Sprintf("%s/antiAffinityPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
 	err := s.client.Delete(url, nil)
 	return err
 }

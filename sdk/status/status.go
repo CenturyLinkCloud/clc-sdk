@@ -7,21 +7,23 @@ import (
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 )
 
-func New(client *api.Client) *Service {
+func New(client api.HTTP) *Service {
 	return &Service{
 		client:       client,
+		config:       client.Config(),
 		PollInterval: 30 * time.Second,
 	}
 }
 
 type Service struct {
-	client *api.Client
+	client api.HTTP
+	config *api.Config
 
 	PollInterval time.Duration
 }
 
 func (s *Service) Get(id string) (*Response, error) {
-	url := fmt.Sprintf("%s/operations/%s/status/%s", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	url := fmt.Sprintf("%s/operations/%s/status/%s", s.config.BaseURL, s.config.Alias, id)
 	status := &Response{}
 	err := s.client.Get(url, status)
 	return status, err

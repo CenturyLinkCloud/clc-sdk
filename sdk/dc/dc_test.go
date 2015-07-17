@@ -2,7 +2,6 @@ package dc_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -48,19 +47,7 @@ type MockClient struct {
 	mock.Mock
 }
 
-func (m *MockClient) GetConfig() *api.Config {
-	return &api.Config{
-		User: api.User{
-			Username: "test.user",
-			Password: "s0s3cur3",
-		},
-		Alias:   "test",
-		BaseURL: "http://localhost/v2",
-	}
-}
-
 func (m *MockClient) Get(url string, resp interface{}) error {
-	fmt.Printf("%s\n", url)
 	if strings.HasSuffix(url, "?groupLinks=true") {
 		json.Unmarshal([]byte(`{"id":"dc1","name":"test datacenter","links":[{"rel":"self","href":"/v2/datacenters/test/dc1"}]}`), resp)
 	}
@@ -90,4 +77,15 @@ func (m *MockClient) Patch(url string, body, resp interface{}) error {
 func (m *MockClient) Delete(url string, resp interface{}) error {
 	args := m.Called(url, resp)
 	return args.Error(0)
+}
+
+func (m *MockClient) Config() *api.Config {
+	return &api.Config{
+		User: api.User{
+			Username: "test.user",
+			Password: "s0s3cur3",
+		},
+		Alias:   "test",
+		BaseURL: "http://localhost/v2",
+	}
 }
