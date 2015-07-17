@@ -17,11 +17,24 @@ func New(config Config) *Client {
 	}
 }
 
+type HTTP interface {
+	Get(url string, resp interface{}) error
+	Post(url string, body, resp interface{}) error
+	Put(url string, body, resp interface{}) error
+	Patch(url string, body, resp interface{}) error
+	Delete(url string, resp interface{}) error
+	GetConfig() *Config
+}
+
 type Client struct {
 	Config Config
 	Token  Token
 
 	client *http.Client
+}
+
+func (c *Client) GetConfig() *Config {
+	return &c.Config
 }
 
 func (c *Client) Get(url string, resp interface{}) error {

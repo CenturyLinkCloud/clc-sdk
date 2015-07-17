@@ -7,7 +7,7 @@ import (
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 )
 
-func New(client *api.Client) *Service {
+func New(client api.HTTP) *Service {
 	return &Service{
 		client:       client,
 		PollInterval: 30 * time.Second,
@@ -15,20 +15,22 @@ func New(client *api.Client) *Service {
 }
 
 type Service struct {
-	client *api.Client
+	client api.HTTP
 
 	PollInterval time.Duration
 }
 
 func (s *Service) Get(id string) (*Response, error) {
-	url := fmt.Sprintf("%s/datacenters/%s/%s?groupLinks=true", s.client.Config.BaseURL, s.client.Config.Alias, id)
+	config := s.client.GetConfig()
+	url := fmt.Sprintf("%s/datacenters/%s/%s?groupLinks=true", config.BaseURL, config.Alias, id)
 	dc := &Response{}
 	err := s.client.Get(url, dc)
 	return dc, err
 }
 
 func (s *Service) GetAll() ([]*Response, error) {
-	url := fmt.Sprintf("%s/datacenters/%s", s.client.Config.BaseURL, s.client.Config.Alias)
+	config := s.client.GetConfig()
+	url := fmt.Sprintf("%s/datacenters/%s", config.BaseURL, config.Alias)
 	dcs := make([]*Response, 0)
 	err := s.client.Get(url, &dcs)
 	return dcs, err

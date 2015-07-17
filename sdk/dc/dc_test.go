@@ -3,83 +3,91 @@ package dc_test
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/mikebeyer/clc-sdk/sdk/dc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetDatacenter(t *testing.T) {
 	assert := assert.New(t)
 
-	name := "va1"
-	ms, service := mockStatusAPI()
-	defer ms.Close()
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/datacenters/test/dc1?groupLinks=true", mock.Anything).Return(nil)
+	service := dc.New(client)
 
-	resp, err := service.Get(name)
+	id := "dc1"
+	resp, err := service.Get(id)
 
 	assert.Nil(err)
-	assert.Equal(name, resp.ID)
+	assert.Equal(id, resp.ID)
 }
 
 func TestGetDatacenters(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockStatusAPI()
-	defer ms.Close()
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/datacenters/test", mock.Anything).Return(nil)
+	service := dc.New(client)
 
-	_, err := service.GetAll()
+	resp, err := service.GetAll()
 
 	assert.Nil(err)
+	assert.Equal(1, len(resp))
+	assert.Equal("dc1", resp[0].ID)
 }
 
-func mockStatusAPI() (*httptest.Server, *dc.Service) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/datacenters/test/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
+func NewMockClient() *MockClient {
+	return &MockClient{}
+}
 
-		if r.URL.RawQuery != "groupLinks=true" {
-			http.Error(w, "bad reqest", http.StatusBadRequest)
-			return
-		}
+type MockClient struct {
+	mock.Mock
+}
 
-		parts := strings.Split(r.RequestURI, "/")
-		name := strings.Split(parts[len(parts)-1], "?")[0]
-		dc := dc.Response{ID: name}
-		w.Header().Add("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(dc); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	mux.HandleFunc("/datacenters/test", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `[{"id":"dc1","name":"test datacenter","links":[{"rel":"self","href":"/v2/datacenters/test/dc1"}]}]`)
-	})
-
-	mockAPI := httptest.NewServer(mux)
-	config := api.Config{
+func (m *MockClient) GetConfig() *api.Config {
+	return &api.Config{
 		User: api.User{
 			Username: "test.user",
 			Password: "s0s3cur3",
 		},
 		Alias:   "test",
-		BaseURL: mockAPI.URL,
+		BaseURL: "http://localhost/v2",
+	}
+}
+
+func (m *MockClient) Get(url string, resp interface{}) error {
+	fmt.Printf("%s\n", url)
+	if strings.HasSuffix(url, "?groupLinks=true") {
+		json.Unmarshal([]byte(`{"id":"dc1","name":"test datacenter","links":[{"rel":"self","href":"/v2/datacenters/test/dc1"}]}`), resp)
+	}
+	if strings.HasSuffix(url, "test") {
+		json.Unmarshal([]byte(`[{"id":"dc1","name":"test datacenter","links":[{"rel":"self","href":"/v2/datacenters/test/dc1"}]}]`), resp)
 	}
 
-	client := api.New(config)
-	client.Token = api.Token{Token: "validtoken"}
-	return mockAPI, dc.New(client)
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Post(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Put(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Patch(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Delete(url string, resp interface{}) error {
+	args := m.Called(url, resp)
+	return args.Error(0)
 }
