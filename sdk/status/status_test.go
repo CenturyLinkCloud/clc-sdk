@@ -1,75 +1,95 @@
 package status_test
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
+	"encoding/json"
 	"testing"
 	"time"
 
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/mikebeyer/clc-sdk/sdk/status"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetStatus(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockStatusAPI()
-	defer ms.Close()
-
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/operations/test/status/12345", mock.Anything).Return(nil)
+	service := status.New(client)
 	resp, err := service.Get("12345")
 
 	assert.Nil(err)
 	assert.True(resp.Running())
+	client.AssertExpectations(t)
 }
 
 func TestGetStatus_Polling(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockStatusAPI()
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/operations/test/status/12345", mock.Anything).Return(nil)
+	service := status.New(client)
 	service.PollInterval = 1 * time.Microsecond
-	defer ms.Close()
 
 	poll := make(chan *status.Response, 1)
-	err := service.Poll("poll", poll)
+	err := service.Poll("12345", poll)
 
 	status := <-poll
 
 	assert.Nil(err)
 	assert.True(status.Complete())
+	client.AssertExpectations(t)
 }
 
-func mockStatusAPI() (*httptest.Server, *status.Service) {
-	count := 0
-	mux := http.NewServeMux()
-	mux.HandleFunc("/operations/test/status/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
+func NewMockClient() *MockClient {
+	return &MockClient{}
+}
 
-		w.Header().Add("Content-Type", "application/json")
-		if count <= 1 {
-			fmt.Fprintf(w, `{"status":"running"}`)
-		} else {
-			fmt.Fprintf(w, `{"status":"succeeded"}`)
-		}
-		count++
-		return
-	})
+type MockClient struct {
+	mock.Mock
 
-	mockAPI := httptest.NewServer(mux)
-	config := api.Config{
+	count int
+}
+
+func (m *MockClient) Get(url string, resp interface{}) error {
+	if m.count <= 1 {
+		json.Unmarshal([]byte(`{"status":"executing"}`), resp)
+	} else {
+		json.Unmarshal([]byte(`{"status":"succeeded"}`), resp)
+	}
+	m.count++
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Post(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Put(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Patch(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Delete(url string, resp interface{}) error {
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
+
+func (m *MockClient) Config() *api.Config {
+	return &api.Config{
 		User: api.User{
 			Username: "test.user",
 			Password: "s0s3cur3",
 		},
 		Alias:   "test",
-		BaseURL: mockAPI.URL,
+		BaseURL: "http://localhost/v2",
 	}
-
-	client := api.New(config)
-	client.Token = api.Token{Token: "validtoken"}
-	return mockAPI, status.New(client)
 }

@@ -57,7 +57,7 @@ func (s *Response) Failed() bool {
 }
 
 func (s *Response) Running() bool {
-	return !s.Complete() && !s.Failed()
+	return !s.Complete() && !s.Failed() && s.Status != ""
 }
 
 const (
