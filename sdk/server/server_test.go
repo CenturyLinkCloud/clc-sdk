@@ -2,50 +2,53 @@ package server_test
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/mikebeyer/clc-sdk/sdk/api"
 	"github.com/mikebeyer/clc-sdk/sdk/server"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetServer(t *testing.T) {
 	assert := assert.New(t)
 
-	name := "va1testserver01"
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/servers/test/va1testserver01", mock.Anything).Return(nil)
+	service := server.New(client)
 
+	name := "va1testserver01"
 	resp, err := service.Get(name)
 
 	assert.Nil(err)
 	assert.Equal(name, resp.Name)
+	client.AssertExpectations(t)
 }
 
 func TestGetServerByUUID(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/servers/test/5404cf5ece2042dc9f2ac16ab67416bb?uuid=true", mock.Anything).Return(nil)
+	service := server.New(client)
 
 	resp, err := service.Get("5404cf5ece2042dc9f2ac16ab67416bb")
 
 	assert.Nil(err)
 	assert.Equal("va1testserver01", resp.Name)
+	client.AssertExpectations(t)
 }
 
 func TestCreateServer(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/servers/test", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
 
 	server := server.Server{
-		Name:           "va1testserver01",
+		Name:           "server",
 		CPU:            1,
 		MemoryGB:       1,
 		GroupID:        "group",
@@ -57,13 +60,16 @@ func TestCreateServer(t *testing.T) {
 	assert.Nil(err)
 	assert.True(s.IsQueued)
 	assert.Equal(server.Name, s.Server)
+	client.AssertExpectations(t)
 }
 
 func TestUpdateServer_UpdateCPU(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
+	client := NewMockClient()
+	cpus := []server.ServerUpdate{server.ServerUpdate{Op: "set", Member: "cpu", Value: server.CPU(1)}}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", cpus, mock.Anything).Return(nil)
+	service := server.New(client)
 
 	name := "va1testserver01"
 	cpu := server.CPU(1)
@@ -71,178 +77,140 @@ func TestUpdateServer_UpdateCPU(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(name, resp.Server)
+	client.AssertExpectations(t)
 }
 
 func TestDeleteServer(t *testing.T) {
 	assert := assert.New(t)
 
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
+	client := NewMockClient()
+	client.On("Delete", "http://localhost/v2/servers/test/va1testserver01", mock.Anything).Return(nil)
+	service := server.New(client)
 
 	name := "va1testserver01"
 	server, err := service.Delete(name)
 
 	assert.Nil(err)
 	assert.Equal(name, server.Server)
+	client.AssertExpectations(t)
 }
 
 func TestAddPublicIP(t *testing.T) {
 	assert := assert.New(t)
 
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/servers/test/va1testserver01/publicIPAddresses", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
 	name := "va1testserver01"
 	ip := server.PublicIP{}
 	ip.Ports = []server.Port{server.Port{Protocol: "TCP", Port: 8080}}
-
-	req := server.PublicIP{}
-	ms, service := mockServerAPI(&req)
-	defer ms.Close()
 
 	resp, err := service.AddPublicIP(name, ip)
 
 	assert.Nil(err)
 	assert.Equal("status", resp.Rel)
-	assert.Equal(8080, req.Ports[0].Port)
+	client.AssertExpectations(t)
 }
 
 func TestGetPublicIP(t *testing.T) {
 	assert := assert.New(t)
 
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/servers/test/va1testserver01/publicIPAddresses/10.0.0.1", mock.Anything).Return(nil)
+	service := server.New(client)
+
 	ip := "10.0.0.1"
 	name := "va1testserver01"
-
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
 
 	resp, err := service.GetPublicIP(name, ip)
 
 	assert.Nil(err)
 	assert.Equal(ip, resp.InternalIP)
 	assert.Equal(1, len(resp.Ports))
+	client.AssertExpectations(t)
 }
 
 func TestDeletePublicIP(t *testing.T) {
 	assert := assert.New(t)
 
+	client := NewMockClient()
+	client.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
 	ip := "10.0.0.1"
 	name := "va1testserver01"
-
-	ms, service := mockServerAPI(nil)
-	defer ms.Close()
 
 	resp, err := service.DeletePublicIP(name, ip)
 
 	assert.Nil(err)
 	assert.NotEmpty(resp.ID)
+	client.AssertExpectations(t)
 }
 
-func mockServerAPI(req interface{}) (*httptest.Server, *server.Service) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/servers/test", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-			return
-		}
+func NewMockClient() *MockClient {
+	return &MockClient{}
+}
 
-		server := &server.Server{}
-		err := json.NewDecoder(r.Body).Decode(server)
-		if err != nil {
-			http.Error(w, "server err", http.StatusInternalServerError)
-			return
-		}
+type MockClient struct {
+	mock.Mock
+}
 
-		if !server.Valid() {
-			http.Error(w, "bad request", http.StatusBadRequest)
-			return
-		}
+func (m *MockClient) Get(url string, resp interface{}) error {
+	if strings.HasSuffix(url, "va1testserver01") || strings.HasSuffix(url, "?uuid=true") {
+		json.Unmarshal([]byte(`{"id":"va1testserver01","name":"va1testserver01","description":"My web server","groupId":"2a5c0b9662cf4fc8bf6180f139facdc0","isTemplate":false,"locationId":"WA1","osType":"Windows 2008 64-bit","status":"active","details":{"ipAddresses":[{"internal":"10.82.131.44"},{"public":"91.14.111.101","internal":"10.82.131.45"}],"alertPolicies":[{"id":"15836e6219e84ac736d01d4e571bb950","name":"Production Web Servers - RAM","links":[{"rel":"self","href":"/v2/alertPolicies/alias/15836e6219e84ac736d01d4e571bb950"},{"rel":"alertPolicyMap","href":"/v2/servers/alias/WA1ALIASWB01/alertPolicies/15836e6219e84ac736d01d4e571bb950","verbs":["DELETE"]}]},{"id":"2bec81dd90aa4217887548c3c20d7421","name":"Production Web Servers - Disk","links":[{"rel":"self","href":"/v2/alertPolicies/alias/2bec81dd90aa4217887548c3c20d7421"},{"rel":"alertPolicyMap","href":"/v2/servers/alias/WA1ALIASWB01/alertPolicies/2bec81dd90aa4217887548c3c20d7421","verbs":["DELETE"]}]}],"cpu":2,"diskCount":1,"hostName":"WA1ALIASWB01.customdomain.com","inMaintenanceMode":false,"memoryMB":4096,"powerState":"started","storageGB":60,"disks":[{"id":"0:0","sizeGB":60,"partitionPaths":[]}],"partitions":[{"sizeGB":59.654,"path":"C:"}],"snapshots":[{"name":"2014-05-16.23:45:52","links":[{"rel":"self","href":"/v2/servers/alias/WA1ALIASWB01/snapshots/40"},{"rel":"delete","href":"/v2/servers/alias/WA1ALIASWB01/snapshots/40"},{"rel":"restore","href":"/v2/servers/alias/WA1ALIASWB01/snapshots/40/restore"}]}],"customFields":[{"id":"22f002123e3b46d9a8b38ecd4c6df7f9","name":"Cost Center","value":"IT-DEV","displayValue":"IT-DEV"},{"id":"58f83af6123846769ee6cb091ce3561e","name":"CMDB ID","value":"1100003","displayValue":"1100003"}]},"type":"standard","storageType":"standard","changeInfo":{"createdDate":"2012-12-17T01:17:17Z","createdBy":"user@domain.com","modifiedDate":"2014-05-16T23:49:25Z","modifiedBy":"user@domain.com"},"links":[{"rel":"self","href":"/v2/servers/alias/WA1ALIASWB01","id":"WA1ALIASWB01","verbs":["GET","PATCH","DELETE"]},{"rel":"group","href":"/v2/groups/alias/2a5c0b9662cf4fc8bf6180f139facdc0","id":"2a5c0b9662cf4fc8bf6180f139facdc0"},{"rel":"account","href":"/v2/accounts/alias","id":"alias"},{"rel":"billing","href":"/v2/billing/alias/estimate-server/WA1ALIASWB01"},{"rel":"statistics","href":"/v2/servers/alias/WA1ALIASWB01/statistics"},{"rel":"scheduledActivities","href":"/v2/servers/alias/WA1ALIASWB01/scheduledActivities"},{"rel":"publicIPAddresses","href":"/v2/servers/alias/WA1ALIASWB01/publicIPAddresses","verbs":["POST"]},{"rel":"alertPolicyMappings","href":"/v2/servers/alias/WA1ALIASWB01/alertPolicies","verbs":["POST"]},{"rel":"antiAffinityPolicyMapping","href":"/v2/servers/alias/WA1ALIASWB01/antiAffinityPolicy","verbs":["DELETE","PUT"]},{"rel":"cpuAutoscalePolicyMapping","href":"/v2/servers/alias/WA1ALIASWB01/cpuAutoscalePolicy","verbs":["DELETE","PUT"]},{"rel":"capabilities","href":"/v2/servers/alias/WA1ALIASWB01/capabilities"},{"rel":"credentials","href":"/v2/servers/alias/WA1ALIASWB01/credentials"},{"rel":"publicIPAddress","href":"/v2/servers/alias/WA1ALIASWB01/publicIPAddresses/91.14.111.101","id":"91.14.111.101","verbs":["GET","PUT","DELETE"]}]}`), resp)
+	}
 
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"},{"rel":"self","href":"/v2/servers/test/12345?uuid=True","id":"12345","verbs":["GET"]}]}`)
-		return
-	})
+	if strings.HasSuffix(url, "10.0.0.1") {
+		json.Unmarshal([]byte(`{"internalIPAddress":"10.0.0.1","ports":[{"protocol":"TCP","port":80}]}`), resp)
+	}
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
 
-	mux.HandleFunc("/servers/test/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			if strings.Contains(r.URL.Path, "publicIPAddresses") {
-				parts := strings.Split(r.RequestURI, "/")
-				ip := parts[len(parts)-1]
-				w.Header().Add("Content-Type", "application/json")
-				fmt.Fprintf(w, fmt.Sprintf(`{"internalIPAddress":"%s","ports":[{"protocol":"TCP","port":80}]}`, ip))
-				return
-			}
+func (m *MockClient) Post(url string, body, resp interface{}) error {
+	if strings.HasSuffix(url, "test") {
+		json.Unmarshal([]byte(`{"server":"server","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/alias/status/wa1-12345","id":"wa1-12345"},{"rel":"self","href":"/v2/servers/alias/8134c91a66784c6dada651eba90a5123?uuid=True","id":"8134c91a66784c6dada651eba90a5123","verbs":["GET"]}]}`), resp)
+	}
 
-			if len(r.URL.Query()) == 0 {
-				parts := strings.Split(r.RequestURI, "/")
-				name := parts[len(parts)-1]
-				server := &server.Response{Name: name}
-				w.Header().Add("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(server)
-				return
-			}
+	if strings.HasSuffix(url, "publicIPAddresses") {
+		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
+	}
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
 
-			if r.URL.Query().Get("uuid") == "true" {
-				server := &server.Response{Name: "va1testserver01"}
-				w.Header().Add("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(server)
-				return
-			}
+func (m *MockClient) Put(url string, body, resp interface{}) error {
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
 
-			http.Error(w, "bad request", http.StatusBadRequest)
-		}
+func (m *MockClient) Patch(url string, body, resp interface{}) error {
+	if strings.HasSuffix(url, "va1testserver01") {
+		json.Unmarshal([]byte(`{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/alias/status/wa1-12345","id":"wa1-12345"},{"rel":"self","href":"/v2/servers/alias/8134c91a66784c6dada651eba90a5123?uuid=True","id":"8134c91a66784c6dada651eba90a5123","verbs":["GET"]}]}`), resp)
+	}
+	args := m.Called(url, body, resp)
+	return args.Error(0)
+}
 
-		if r.Method == "DELETE" {
-			if strings.Contains(r.URL.Path, "publicIPAddresses") {
-				w.Header().Add("Content-Type", "application/json")
-				fmt.Fprint(w, `{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`)
-				return
-			}
+func (m *MockClient) Delete(url string, resp interface{}) error {
+	if strings.HasSuffix(url, "va1testserver01") {
+		json.Unmarshal([]byte(`{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/alias/status/wa1-12345","id":"wa1-12345"},{"rel":"self","href":"/v2/servers/alias/8134c91a66784c6dada651eba90a5123?uuid=True","id":"8134c91a66784c6dada651eba90a5123","verbs":["GET"]}]}`), resp)
+	}
+	if strings.HasSuffix(url, "10.0.0.1") {
+		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
+	}
+	args := m.Called(url, resp)
+	return args.Error(0)
+}
 
-			parts := strings.Split(r.RequestURI, "/")
-			name := parts[len(parts)-1]
-			w.Header().Add("Content-Type", "application/json")
-			fmt.Fprint(w, fmt.Sprintf(`{"server":"%s","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`, name))
-			return
-		}
-
-		if r.Method == "PATCH" {
-			updates := make([]server.ServerUpdate, 0)
-			if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
-				http.Error(w, "internal server error", http.StatusInternalServerError)
-				return
-			}
-			for _, v := range updates {
-				if v.Op != "set" {
-					http.Error(w, "bad request", http.StatusBadRequest)
-					return
-				}
-			}
-
-			parts := strings.Split(r.RequestURI, "/")
-			name := parts[len(parts)-1]
-			w.Header().Add("Content-Type", "application/json")
-			fmt.Fprint(w, fmt.Sprintf(`{"server":"%s","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/test/status/12345","id":"12345"}]}`, name))
-			return
-		}
-
-		if r.Method == "POST" && strings.HasSuffix(r.URL.Path, "publicIPAddresses") {
-			json.NewDecoder(r.Body).Decode(req)
-			w.Header().Add("Content-Type", "application/json")
-			fmt.Fprint(w, `{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`)
-			return
-		}
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-	})
-
-	mockAPI := httptest.NewServer(mux)
-	config := api.Config{
+func (m *MockClient) Config() *api.Config {
+	return &api.Config{
 		User: api.User{
 			Username: "test.user",
 			Password: "s0s3cur3",
 		},
 		Alias:   "test",
-		BaseURL: mockAPI.URL,
+		BaseURL: "http://localhost/v2",
 	}
-
-	client := api.New(config)
-	client.Token = api.Token{Token: "validtoken"}
-	return mockAPI, server.New(client)
 }
