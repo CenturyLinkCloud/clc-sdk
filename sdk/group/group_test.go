@@ -45,6 +45,21 @@ func TestGetGroup(t *testing.T) {
 	assert.Equal(id, resp.ID)
 }
 
+func TestDeleteGroup(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Delete", "http://localhost/v2/groups/test/67890", mock.Anything).Return(nil)
+	service := group.New(client)
+
+	id := "67890"
+	resp, err := service.Delete(id)
+
+	assert.Nil(err)
+	assert.Equal("status", resp.Rel)
+	assert.NotEmpty(resp.ID)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
@@ -76,6 +91,7 @@ func (m *MockClient) Patch(url string, body, resp interface{}) error {
 }
 
 func (m *MockClient) Delete(url string, resp interface{}) error {
+	json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
 	args := m.Called(url, resp)
 	return args.Error(0)
 }

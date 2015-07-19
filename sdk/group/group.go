@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/mikebeyer/clc-sdk/sdk/api"
+	"github.com/mikebeyer/clc-sdk/sdk/status"
 )
 
 func New(client api.HTTP) *Service {
@@ -30,6 +31,13 @@ func (s *Service) Create(group Group) (*Response, error) {
 	resp := &Response{}
 	url := fmt.Sprintf("%s/groups/%s", s.config.BaseURL, s.config.Alias)
 	err := s.client.Post(url, group, resp)
+	return resp, err
+}
+
+func (s *Service) Delete(id string) (*status.Status, error) {
+	url := fmt.Sprintf("%s/groups/%s/%s", s.config.BaseURL, s.config.Alias, id)
+	resp := &status.Status{}
+	err := s.client.Delete(url, resp)
 	return resp, err
 }
 
