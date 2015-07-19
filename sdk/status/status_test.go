@@ -2,6 +2,7 @@ package status_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
@@ -24,7 +25,7 @@ func TestGetStatus(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
-func TestGetStatus_Polling(t *testing.T) {
+func TestPollStatus(t *testing.T) {
 	assert := assert.New(t)
 
 	client := NewMockClient()
@@ -40,6 +41,19 @@ func TestGetStatus_Polling(t *testing.T) {
 	assert.Nil(err)
 	assert.True(status.Complete())
 	client.AssertExpectations(t)
+}
+
+func TestPollStatus_ErrorGettingStatus(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/operations/test/status/12345", mock.Anything).Return(errors.New(""))
+	service := status.New(client)
+	service.PollInterval = 1 * time.Microsecond
+
+	err := service.Poll("12345", make(chan *status.Response, 1))
+
+	assert.NotNil(err)
 }
 
 func NewMockClient() *MockClient {
