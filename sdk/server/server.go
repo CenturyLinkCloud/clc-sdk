@@ -126,6 +126,22 @@ func UpdateCredentials(current, updated string) api.Update {
 	}
 }
 
+func UpdateGroup(group string) api.Update {
+	return api.Update{
+		Op:     "set",
+		Member: "groupId",
+		Value:  group,
+	}
+}
+
+func UpdateDescription(desc string) api.Update {
+	return api.Update{
+		Op:     "set",
+		Member: "description",
+		Value:  desc,
+	}
+}
+
 type Server struct {
 	Name            string             `json:"name"`
 	Description     string             `json:"description,omitempty"`

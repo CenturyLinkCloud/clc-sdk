@@ -139,6 +139,25 @@ func TestUpdateServer_UpdateCredentials(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestUpdateServer_UpdateGroupAndDescription(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	update := []api.Update{
+		api.Update{Op: "set", Member: "groupId", Value: "12345"},
+		api.Update{Op: "set", Member: "description", Value: "new"},
+	}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", update, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	name := "va1testserver01"
+	resp, err := service.Update(name, server.UpdateGroup("12345"), server.UpdateDescription("new"))
+
+	assert.Nil(err)
+	assert.Equal("status", resp.Rel)
+	client.AssertExpectations(t)
+}
+
 func TestDeleteServer(t *testing.T) {
 	assert := assert.New(t)
 
