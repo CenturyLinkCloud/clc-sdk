@@ -63,6 +63,19 @@ func TestCreateServer(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestCreateServer_InvalidServer(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	service := server.New(client)
+
+	s := server.Server{}
+	_, err := service.Create(s)
+
+	assert.NotNil(err)
+	assert.Equal(err, server.ErrInvalidServer)
+}
+
 func TestUpdateServer_UpdateCPU(t *testing.T) {
 	assert := assert.New(t)
 

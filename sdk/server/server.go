@@ -8,6 +8,10 @@ import (
 	"github.com/mikebeyer/clc-sdk/sdk/status"
 )
 
+var (
+	ErrInvalidServer = fmt.Errorf("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
+)
+
 func New(client api.HTTP) *Service {
 	return &Service{
 		client: client,
@@ -32,7 +36,7 @@ func (s *Service) Get(name string) (*Response, error) {
 
 func (s *Service) Create(server Server) (*QueuedResponse, error) {
 	if !server.Valid() {
-		return nil, fmt.Errorf("server: server missing required field(s). (Name, CPU, MemoryGB, GroupID, SourceServerID, Type)")
+		return nil, ErrInvalidServer
 	}
 
 	resp := &QueuedResponse{}
