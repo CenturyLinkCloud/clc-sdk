@@ -19,6 +19,13 @@ type Service struct {
 	config *api.Config
 }
 
+func (s *Service) Get(id string) (*Response, error) {
+	url := fmt.Sprintf("%s/groups/%s/%s", s.config.BaseURL, s.config.Alias, id)
+	resp := &Response{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
 func (s *Service) Create(group Group) (*Response, error) {
 	resp := &Response{}
 	url := fmt.Sprintf("%s/groups/%s", s.config.BaseURL, s.config.Alias)
