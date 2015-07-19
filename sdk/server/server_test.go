@@ -80,13 +80,12 @@ func TestUpdateServer_UpdateCPU(t *testing.T) {
 	assert := assert.New(t)
 
 	client := NewMockClient()
-	cpus := []server.ServerUpdate{server.ServerUpdate{Op: "set", Member: "cpu", Value: server.CPU(1)}}
-	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", cpus, mock.Anything).Return(nil)
+	update := []api.Update{api.Update{Op: "set", Member: "cpu", Value: 1}}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", update, mock.Anything).Return(nil)
 	service := server.New(client)
 
 	name := "va1testserver01"
-	cpu := server.CPU(1)
-	resp, err := service.Update(name, cpu)
+	resp, err := service.Update(name, server.UpdateCPU(1))
 
 	assert.Nil(err)
 	assert.Equal(name, resp.Server)

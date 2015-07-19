@@ -45,13 +45,9 @@ func (s *Service) Create(server Server) (*QueuedResponse, error) {
 	return resp, err
 }
 
-func (s *Service) Update(name string, patches ...ServerPatch) (*QueuedResponse, error) {
+func (s *Service) Update(name string, updates ...api.Update) (*QueuedResponse, error) {
 	resp := &QueuedResponse{}
 	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
-	var updates []ServerUpdate
-	for _, v := range patches {
-		updates = append(updates, v.Serialize())
-	}
 	err := s.client.Patch(url, updates, resp)
 	return resp, err
 }
@@ -100,24 +96,12 @@ type SourceRestriction struct {
 	CIDR string `json:"cidr"`
 }
 
-type CPU int
-
-func (c CPU) Serialize() ServerUpdate {
-	return ServerUpdate{
+func UpdateCPU(num int) api.Update {
+	return api.Update{
 		Op:     "set",
 		Member: "cpu",
-		Value:  c,
+		Value:  num,
 	}
-}
-
-type ServerPatch interface {
-	Serialize() ServerUpdate
-}
-
-type ServerUpdate struct {
-	Op     string `json:"op"`
-	Member string `json:"member"`
-	Value  interface{}
 }
 
 type Server struct {

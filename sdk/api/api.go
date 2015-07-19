@@ -168,3 +168,9 @@ type Token struct {
 func (t Token) Valid() bool {
 	return t.Token != ""
 }
+
+type Update struct {
+	Op     string      `json:"op"`
+	Member string      `json:"member"`
+	Value  interface{} `json:"value"`
+}
