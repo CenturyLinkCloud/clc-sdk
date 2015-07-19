@@ -17,3 +17,10 @@ func (l Links) GetID(rel string) (bool, string) {
 	}
 	return false, ""
 }
+
+type Customfields struct {
+	ID           string `json:"id,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Value        string `json:"value,omitempty"`
+	Displayvalue string `json:"displayValue,omitempty"`
+}

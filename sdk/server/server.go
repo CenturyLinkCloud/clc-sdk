@@ -122,21 +122,21 @@ type ServerUpdate struct {
 }
 
 type Server struct {
-	Name            string         `json:"name"`
-	Description     string         `json:"description,omitempty"`
-	GroupID         string         `json:"groupId"`
-	SourceServerID  string         `json:"sourceServerId"`
-	IsManagedOS     bool           `json:"isManagedOS,omitempty"`
-	PrimaryDNS      string         `json:"primaryDns,omitempty"`
-	SecondaryDNS    string         `json:"secondaryDns,omitempty"`
-	NetworkID       string         `json:"networkId,omitempty"`
-	IPaddress       string         `json:"ipAddress,omitempty"`
-	Password        string         `json:"password,omitempty"`
-	CPU             int            `json:"cpu"`
-	MemoryGB        int            `json:"memoryGB"`
-	Type            string         `json:"type"`
-	Storagetype     string         `json:"storageType,omitempty"`
-	Customfields    []Customfields `json:"customFields,omitempty"`
+	Name            string             `json:"name"`
+	Description     string             `json:"description,omitempty"`
+	GroupID         string             `json:"groupId"`
+	SourceServerID  string             `json:"sourceServerId"`
+	IsManagedOS     bool               `json:"isManagedOS,omitempty"`
+	PrimaryDNS      string             `json:"primaryDns,omitempty"`
+	SecondaryDNS    string             `json:"secondaryDns,omitempty"`
+	NetworkID       string             `json:"networkId,omitempty"`
+	IPaddress       string             `json:"ipAddress,omitempty"`
+	Password        string             `json:"password,omitempty"`
+	CPU             int                `json:"cpu"`
+	MemoryGB        int                `json:"memoryGB"`
+	Type            string             `json:"type"`
+	Storagetype     string             `json:"storageType,omitempty"`
+	Customfields    []api.Customfields `json:"customFields,omitempty"`
 	Additionaldisks []struct {
 		Path   string `json:"path"`
 		SizeGB int    `json:"sizeGB"`
@@ -186,7 +186,7 @@ type Response struct {
 			Name  string    `json:"name"`
 			Links api.Links `json:"links"`
 		} `json:"snapshots"`
-		Customfields []Customfields `json:"customFields,omitempty"`
+		Customfields []api.Customfields `json:"customFields,omitempty"`
 	} `json:"details"`
 	Type        string `json:"type"`
 	Storagetype string `json:"storageType"`
@@ -207,11 +207,4 @@ type QueuedResponse struct {
 
 func (q *QueuedResponse) GetStatusID() (bool, string) {
 	return q.Links.GetID("status")
-}
-
-type Customfields struct {
-	ID           string `json:"id,omitempty"`
-	Name         string `json:"name,omitempty"`
-	Value        string `json:"value,omitempty"`
-	Displayvalue string `json:"displayValue,omitempty"`
 }
