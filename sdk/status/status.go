@@ -44,6 +44,12 @@ func (s *Service) Poll(id string, poll chan *Response) error {
 	}
 }
 
+type Status struct {
+	ID   string `json:"id"`
+	Rel  string `json:"rel"`
+	Href string `json:"href"`
+}
+
 type Response struct {
 	Status string `json:"status"`
 }

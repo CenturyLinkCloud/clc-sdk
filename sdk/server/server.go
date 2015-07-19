@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/mikebeyer/clc-sdk/sdk/api"
+	"github.com/mikebeyer/clc-sdk/sdk/status"
 )
 
 func New(client api.HTTP) *Service {
@@ -65,16 +66,16 @@ func (s *Service) GetPublicIP(name string, ip string) (*PublicIP, error) {
 	return resp, err
 }
 
-func (s *Service) AddPublicIP(name string, ip PublicIP) (*IPResponse, error) {
+func (s *Service) AddPublicIP(name string, ip PublicIP) (*status.Status, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses", s.config.BaseURL, s.config.Alias, name)
-	resp := &IPResponse{}
+	resp := &status.Status{}
 	err := s.client.Post(url, ip, resp)
 	return resp, err
 }
 
-func (s *Service) DeletePublicIP(name, ip string) (*IPResponse, error) {
+func (s *Service) DeletePublicIP(name, ip string) (*status.Status, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.config.BaseURL, s.config.Alias, name, ip)
-	resp := &IPResponse{}
+	resp := &status.Status{}
 	err := s.client.Delete(url, resp)
 	return resp, err
 }
@@ -93,12 +94,6 @@ type Port struct {
 
 type SourceRestriction struct {
 	CIDR string `json:"cidr"`
-}
-
-type IPResponse struct {
-	ID   string `json:"id"`
-	Rel  string `json:"rel"`
-	Href string `json:"href"`
 }
 
 type CPU int
