@@ -52,6 +52,12 @@ func (s *Service) Update(name string, updates ...api.Update) (*status.Status, er
 	return resp, err
 }
 
+func (s *Service) Edit(name string, updates ...api.Update) error {
+	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
+	err := s.client.Patch(url, updates, nil)
+	return err
+}
+
 func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
 	resp := &QueuedResponse{}

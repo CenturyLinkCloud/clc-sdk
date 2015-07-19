@@ -151,10 +151,9 @@ func TestUpdateServer_UpdateGroupAndDescription(t *testing.T) {
 	service := server.New(client)
 
 	name := "va1testserver01"
-	resp, err := service.Update(name, server.UpdateGroup("12345"), server.UpdateDescription("new"))
+	err := service.Edit(name, server.UpdateGroup("12345"), server.UpdateDescription("new"))
 
 	assert.Nil(err)
-	assert.Equal("status", resp.Rel)
 	client.AssertExpectations(t)
 }
 
