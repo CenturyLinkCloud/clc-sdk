@@ -56,10 +56,13 @@ func TestCreateServer(t *testing.T) {
 		Type:           "standard",
 	}
 	s, err := service.Create(server)
+	ok, id := s.GetStatusID()
 
 	assert.Nil(err)
 	assert.True(s.IsQueued)
 	assert.Equal(server.Name, s.Server)
+	assert.True(ok)
+	assert.NotEmpty(id)
 	client.AssertExpectations(t)
 }
 
@@ -88,7 +91,51 @@ func TestUpdateServer_UpdateCPU(t *testing.T) {
 	resp, err := service.Update(name, server.UpdateCPU(1))
 
 	assert.Nil(err)
-	assert.Equal(name, resp.Server)
+	assert.Equal("status", resp.Rel)
+	client.AssertExpectations(t)
+}
+
+func TestUpdateServer_UpdateMemory(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	update := []api.Update{api.Update{Op: "set", Member: "memory", Value: 1}}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", update, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	name := "va1testserver01"
+	resp, err := service.Update(name, server.UpdateMemory(1))
+
+	assert.Nil(err)
+	assert.Equal("status", resp.Rel)
+	client.AssertExpectations(t)
+}
+
+func TestUpdateServer_UpdateCredentials(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	update := []api.Update{
+		api.Update{
+			Op:     "set",
+			Member: "password",
+			Value: struct {
+				Current  string `json:"current"`
+				Password string `json:"password"`
+			}{
+				"current",
+				"new",
+			},
+		},
+	}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", update, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	name := "va1testserver01"
+	resp, err := service.Update(name, server.UpdateCredentials("current", "new"))
+
+	assert.Nil(err)
+	assert.Equal("status", resp.Rel)
 	client.AssertExpectations(t)
 }
 
@@ -199,7 +246,7 @@ func (m *MockClient) Put(url string, body, resp interface{}) error {
 
 func (m *MockClient) Patch(url string, body, resp interface{}) error {
 	if strings.HasSuffix(url, "va1testserver01") {
-		json.Unmarshal([]byte(`{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/alias/status/wa1-12345","id":"wa1-12345"},{"rel":"self","href":"/v2/servers/alias/8134c91a66784c6dada651eba90a5123?uuid=True","id":"8134c91a66784c6dada651eba90a5123","verbs":["GET"]}]}`), resp)
+		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
 	}
 	args := m.Called(url, body, resp)
 	return args.Error(0)

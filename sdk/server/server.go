@@ -45,8 +45,8 @@ func (s *Service) Create(server Server) (*QueuedResponse, error) {
 	return resp, err
 }
 
-func (s *Service) Update(name string, updates ...api.Update) (*QueuedResponse, error) {
-	resp := &QueuedResponse{}
+func (s *Service) Update(name string, updates ...api.Update) (*status.Status, error) {
+	resp := &status.Status{}
 	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
 	err := s.client.Patch(url, updates, resp)
 	return resp, err
@@ -101,6 +101,28 @@ func UpdateCPU(num int) api.Update {
 		Op:     "set",
 		Member: "cpu",
 		Value:  num,
+	}
+}
+
+func UpdateMemory(num int) api.Update {
+	return api.Update{
+		Op:     "set",
+		Member: "memory",
+		Value:  num,
+	}
+}
+
+func UpdateCredentials(current, updated string) api.Update {
+	return api.Update{
+		Op:     "set",
+		Member: "password",
+		Value: struct {
+			Current  string `json:"current"`
+			Password string `json:"password"`
+		}{
+			current,
+			updated,
+		},
 	}
 }
 
