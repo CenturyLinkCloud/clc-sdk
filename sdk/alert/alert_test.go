@@ -10,6 +10,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestGetAlertPolicy(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/alertPolicies/test/12345", mock.Anything, mock.Anything).Return(nil)
+	service := alert.New(client)
+
+	id := "12345"
+	resp, err := service.Get(id)
+
+	assert.Nil(err)
+	assert.Equal(id, resp.ID)
+	client.AssertExpectations(t)
+}
+
 func TestCreateAlertPolicy(t *testing.T) {
 	assert := assert.New(t)
 
@@ -44,6 +59,25 @@ func TestCreateAlertPolicy(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestUpdateAlertPolicy(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Put", "http://localhost/v2/alertPolicies/test/12345", mock.Anything, mock.Anything).Return(nil)
+	service := alert.New(client)
+
+	a := alert.Alert{
+		Name: "update alert",
+	}
+	id := "12345"
+	resp, err := service.Update(id, a)
+
+	assert.Nil(err)
+	assert.Equal(a.Name, resp.Name)
+	assert.Equal("12345", resp.ID)
+	client.AssertExpectations(t)
+}
+
 func TestDeleteAlertPolicy(t *testing.T) {
 	assert := assert.New(t)
 
@@ -66,6 +100,7 @@ type MockClient struct {
 }
 
 func (m *MockClient) Get(url string, resp interface{}) error {
+	json.Unmarshal([]byte(`{"id":"12345","name":"new alert","actions":[{"action":"email","settings":{"recipients":["user@company.com"]}}],"links":[{"rel":"self","href":"/v2/alertPolicies/test/12345","verbs":["GET","DELETE","PUT"]}],"triggers":[{"metric":"disk","duration":"00:05:00","threshold":80.0}]}`), resp)
 	args := m.Called(url, resp)
 	return args.Error(0)
 }
@@ -77,6 +112,7 @@ func (m *MockClient) Post(url string, body, resp interface{}) error {
 }
 
 func (m *MockClient) Put(url string, body, resp interface{}) error {
+	json.Unmarshal([]byte(`{"id":"12345","name":"update alert","actions":[{"action":"email","settings":{"recipients":["user@company.com"]}}],"links":[{"rel":"self","href":"/v2/alertPolicies/test/12345","verbs":["GET","DELETE","PUT"]}],"triggers":[{"metric":"disk","duration":"00:05:00","threshold":80.0}]}`), resp)
 	args := m.Called(url, body, resp)
 	return args.Error(0)
 }

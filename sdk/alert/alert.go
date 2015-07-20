@@ -18,10 +18,24 @@ type Service struct {
 	config *api.Config
 }
 
+func (s *Service) Get(id string) (*Alert, error) {
+	url := fmt.Sprintf("%s/alertPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
+	resp := &Alert{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
 func (s *Service) Create(alert Alert) (*Alert, error) {
 	url := fmt.Sprintf("%s/alertPolicies/%s", s.config.BaseURL, s.config.Alias)
 	resp := &Alert{}
 	err := s.client.Post(url, alert, resp)
+	return resp, err
+}
+
+func (s *Service) Update(id string, alert Alert) (*Alert, error) {
+	url := fmt.Sprintf("%s/alertPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
+	resp := &Alert{}
+	err := s.client.Put(url, alert, resp)
 	return resp, err
 }
 
