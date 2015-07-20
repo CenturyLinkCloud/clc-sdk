@@ -25,6 +25,11 @@ func (s *Service) Create(alert Alert) (*Alert, error) {
 	return resp, err
 }
 
+func (s *Service) Delete(id string) error {
+	url := fmt.Sprintf("%s/alertPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
+	return s.client.Delete(url, nil)
+}
+
 type Alert struct {
 	ID       string    `json:"id"`
 	Name     string    `json:"name"`

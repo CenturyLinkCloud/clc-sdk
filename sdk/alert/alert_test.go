@@ -44,6 +44,19 @@ func TestCreateAlertPolicy(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestDeleteAlertPolicy(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Delete", "http://localhost/v2/alertPolicies/test/12345", mock.Anything).Return(nil)
+	service := alert.New(client)
+
+	err := service.Delete("12345")
+
+	assert.Nil(err)
+	client.AssertExpectations(t)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
