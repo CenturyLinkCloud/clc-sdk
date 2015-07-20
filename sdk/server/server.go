@@ -65,6 +65,48 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	return resp, err
 }
 
+func (s *Service) PowerState(state PowerState, servers ...string) ([]*QueuedResponse, error) {
+	url := fmt.Sprintf("%s/operations/%s/servers/%s", s.config.BaseURL, s.config.Alias, state)
+	var resp []*QueuedResponse
+	err := s.client.Post(url, servers, &resp)
+	return resp, err
+}
+
+type PowerState int
+
+const (
+	On = iota
+	Off
+	Pause
+	Reboot
+	Reset
+	ShutDown
+	StartMaintenance
+	StopMaintenance
+)
+
+func (p PowerState) String() string {
+	switch p {
+	case On:
+		return "powerOn"
+	case Off:
+		return "powerOff"
+	case Pause:
+		return "pause"
+	case Reboot:
+		return "reboot"
+	case Reset:
+		return "reset"
+	case ShutDown:
+		return "shutDown"
+	case StartMaintenance:
+		return "startMaintenance"
+	case StopMaintenance:
+		return "stopMaintenance"
+	}
+	return ""
+}
+
 func (s *Service) GetPublicIP(name string, ip string) (*PublicIP, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.config.BaseURL, s.config.Alias, name, ip)
 	resp := &PublicIP{}
@@ -229,7 +271,8 @@ type Response struct {
 type QueuedResponse struct {
 	Server   string    `json:"server"`
 	IsQueued bool      `json:"isQueued"`
-	Links    api.Links `json:"links"`
+	Links    api.Links `json:"links,omitempty"`
+	Error    string    `json:"errorMessage,omitempty"`
 }
 
 func (q *QueuedResponse) GetStatusID() (bool, string) {
