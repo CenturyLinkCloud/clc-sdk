@@ -81,7 +81,7 @@ func (c *Client) serialize(body interface{}) (io.Reader, error) {
 
 func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
 	if !c.Token.Valid() {
-		token, err := c.auth()
+		token, err := c.Auth()
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,7 @@ func (c *Client) do(method, url string, body io.Reader, resp interface{}) error 
 	return json.NewDecoder(res.Body).Decode(resp)
 }
 
-func (c *Client) auth() (string, error) {
+func (c *Client) Auth() (string, error) {
 	url := fmt.Sprintf("%s/authentication/login", c.config.BaseURL)
 	b := new(bytes.Buffer)
 	err := json.NewEncoder(b).Encode(c.config.User)
