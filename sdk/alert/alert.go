@@ -25,6 +25,13 @@ func (s *Service) Get(id string) (*Alert, error) {
 	return resp, err
 }
 
+func (s *Service) GetAll() (*Alerts, error) {
+	url := fmt.Sprintf("%s/alertPolicies/%s", s.config.BaseURL, s.config.Alias)
+	resp := &Alerts{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
 func (s *Service) Create(alert Alert) (*Alert, error) {
 	url := fmt.Sprintf("%s/alertPolicies/%s", s.config.BaseURL, s.config.Alias)
 	resp := &Alert{}
@@ -42,6 +49,11 @@ func (s *Service) Update(id string, alert Alert) (*Alert, error) {
 func (s *Service) Delete(id string) error {
 	url := fmt.Sprintf("%s/alertPolicies/%s/%s", s.config.BaseURL, s.config.Alias, id)
 	return s.client.Delete(url, nil)
+}
+
+type Alerts struct {
+	Items []Alert   `json:"items"`
+	Links api.Links `json:"links"`
 }
 
 type Alert struct {

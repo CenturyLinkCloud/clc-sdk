@@ -2,6 +2,7 @@ package alert_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/mikebeyer/clc-sdk/sdk/alert"
@@ -14,7 +15,7 @@ func TestGetAlertPolicy(t *testing.T) {
 	assert := assert.New(t)
 
 	client := NewMockClient()
-	client.On("Get", "http://localhost/v2/alertPolicies/test/12345", mock.Anything, mock.Anything).Return(nil)
+	client.On("Get", "http://localhost/v2/alertPolicies/test/12345", mock.Anything).Return(nil)
 	service := alert.New(client)
 
 	id := "12345"
@@ -23,6 +24,19 @@ func TestGetAlertPolicy(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(id, resp.ID)
 	client.AssertExpectations(t)
+}
+
+func TestGetAllAlertPolicies(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/alertPolicies/test", mock.Anything).Return(nil)
+	service := alert.New(client)
+
+	resp, err := service.GetAll()
+
+	assert.Nil(err)
+	assert.Equal(2, len(resp.Items))
 }
 
 func TestCreateAlertPolicy(t *testing.T) {
@@ -100,7 +114,11 @@ type MockClient struct {
 }
 
 func (m *MockClient) Get(url string, resp interface{}) error {
-	json.Unmarshal([]byte(`{"id":"12345","name":"new alert","actions":[{"action":"email","settings":{"recipients":["user@company.com"]}}],"links":[{"rel":"self","href":"/v2/alertPolicies/test/12345","verbs":["GET","DELETE","PUT"]}],"triggers":[{"metric":"disk","duration":"00:05:00","threshold":80.0}]}`), resp)
+	if strings.HasSuffix(url, "12345") {
+		json.Unmarshal([]byte(`{"id":"12345","name":"new alert","actions":[{"action":"email","settings":{"recipients":["user@company.com"]}}],"links":[{"rel":"self","href":"/v2/alertPolicies/test/12345","verbs":["GET","DELETE","PUT"]}],"triggers":[{"metric":"disk","duration":"00:05:00","threshold":80.0}]}`), resp)
+	}
+
+	json.Unmarshal([]byte(`{"items":[{"id":"999de90f25ab4308a6c346cd03602fef","name":"Memory Above 90%","actions":[{"action":"email","settings":{"recipients":["user@company.com"]}}],"links":[{"rel":"self","href":"/v2/alertPolicies/test/999de90f25ab4308a6c346cd03602fef","verbs":["GET","DELETE","PUT"]}],"triggers":[{"metric":"memory","duration":"00:10:00","threshold":90.0}]},{"id":"175c3b5743d64cea952a5cca03bdb2da","name":"CPU Above 75%","actions":[{"action":"email","settings":{"recipients":["user@company.com"]}}],"links":[{"rel":"self","href":"/v2/alertPolicies/test/175c3b5743d64cea952a5cca03bdb2da","verbs":["GET","DELETE","PUT"]}],"triggers":[{"metric":"cpu","duration":"00:05:00","threshold":75.0}]}],"links":[{"rel":"self","href":"/v2/alertPolicies/test","verbs":["GET","POST"]}]}`), resp)
 	args := m.Called(url, resp)
 	return args.Error(0)
 }
