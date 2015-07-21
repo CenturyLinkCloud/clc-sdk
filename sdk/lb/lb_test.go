@@ -23,6 +23,7 @@ func TestGetLB(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(id, resp.ID)
+	client.AssertExpectations(t)
 }
 
 func TestGetAllLBs(t *testing.T) {
@@ -36,6 +37,7 @@ func TestGetAllLBs(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(1, len(resp))
+	client.AssertExpectations(t)
 }
 
 func TestCreateLB(t *testing.T) {
@@ -55,6 +57,7 @@ func TestCreateLB(t *testing.T) {
 	assert.Equal(lb.Name, resp.Name)
 	assert.Equal("enabled", resp.Status)
 	assert.NotEmpty(resp.ID)
+	client.AssertExpectations(t)
 }
 
 func TestGetLBPool(t *testing.T) {
@@ -69,6 +72,7 @@ func TestGetLBPool(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(id, resp.ID)
+	client.AssertExpectations(t)
 }
 
 func TestGetLBPools(t *testing.T) {
@@ -82,6 +86,7 @@ func TestGetLBPools(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(1, len(resp))
+	client.AssertExpectations(t)
 }
 
 func TestCreateLBPool(t *testing.T) {
@@ -102,6 +107,7 @@ func TestCreateLBPool(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(pool.Port, resp.Port)
 	assert.NotEmpty(resp.ID)
+	client.AssertExpectations(t)
 }
 
 func TestGetAllNodes(t *testing.T) {
@@ -115,6 +121,7 @@ func TestGetAllNodes(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(2, len(resp))
+	client.AssertExpectations(t)
 }
 
 func TestUpdateNodes(t *testing.T) {
@@ -131,6 +138,7 @@ func TestUpdateNodes(t *testing.T) {
 	err := service.UpdateNodes("dc1", "12345", "56789", node)
 
 	assert.Nil(err)
+	client.AssertExpectations(t)
 }
 
 func NewMockClient() *MockClient {
