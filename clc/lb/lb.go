@@ -19,6 +19,7 @@ func Commands(client *clc.Client) cli.Command {
 			create(client),
 			getPool(client),
 			createPool(client),
+			getNode(client),
 		},
 	}
 }
@@ -200,6 +201,39 @@ func createPool(client *clc.Client) cli.Command {
 			resp, err := client.LB.CreatePool(c.String("location"), c.String("id"), pool)
 			if err != nil {
 				fmt.Printf("failed to create load balancer pool for [%s] in %s\n", c.String("id"), c.String("location"))
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				fmt.Printf("%s\n", err)
+				return
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func getNode(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "get-node",
+		Aliases: []string{"gn"},
+		Usage:   "get load balancer node details",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.StringFlag{Name: "pool", Usage: "load balancer pool id [required]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("location") == "" || c.String("id") == "" || c.String("pool") == "" {
+				fmt.Printf("missing required flags to get pool. [use --help to show required flags]\n")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			resp, err := client.LB.GetAllNodes(c.String("location"), c.String("id"), c.String("pool"))
+			if err != nil {
+				fmt.Printf("failed to get %s\n", c.Args().First())
 				return
 			}
 			b, err := json.MarshalIndent(resp, "", "  ")
