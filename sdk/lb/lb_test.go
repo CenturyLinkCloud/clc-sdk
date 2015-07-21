@@ -104,6 +104,19 @@ func TestCreateLBPool(t *testing.T) {
 	assert.NotEmpty(resp.ID)
 }
 
+func TestGetAllNodes(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345/pools/56789/nodes", mock.Anything).Return(nil)
+	service := lb.New(client)
+
+	resp, err := service.GetAllNodes("dc1", "12345", "56789")
+
+	assert.Nil(err)
+	assert.Equal(2, len(resp))
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
@@ -117,6 +130,8 @@ func (m *MockClient) Get(url string, resp interface{}) error {
 		json.Unmarshal([]byte(`{"id":"12345","name":"new","description":"balancing load","ipAddress":"10.10.10.10","status":"enabled","pools":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345","verbs":["GET","PUT","DELETE"]},{"rel":"pools","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools","verbs":["GET","POST"]}]}`), resp)
 	} else if strings.HasSuffix(url, "56789") {
 		json.Unmarshal([]byte(`{"id":"56789","port":80,"method":"leastConnection","persistence":"standard","links":[{"rel":"self","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789","verbs":["GET","PUT","DELETE"]},{"rel":"nodes","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789/nodes","verbs":["GET","PUT"]}]}`), resp)
+	} else if strings.HasSuffix(url, "nodes") {
+		json.Unmarshal([]byte(`[{"status":"enabled","ipAddress":"10.11.12.13","privatePort":80},{"status":"enabled","ipAddress":"10.11.12.14","privatePort":80}]`), resp)
 	} else if strings.Contains(url, "pools") {
 		json.Unmarshal([]byte(`[{"id":"56789","port":80,"method":"leastConnection","persistence":"standard","links":[{"rel":"self","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789","verbs":["GET","PUT","DELETE"]},{"rel":"nodes","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789/nodes","verbs":["GET","PUT"]}]}]`), resp)
 	} else {
