@@ -19,6 +19,7 @@ func Commands(client *clc.Client) cli.Command {
 		Subcommands: []cli.Command{
 			get(client),
 			create(client),
+			getPool(client),
 			createPool(client),
 		},
 	}
@@ -83,7 +84,7 @@ func create(client *clc.Client) cli.Command {
 			name := c.String("name")
 			loc := c.String("location")
 			if name == "" || loc == "" {
-				fmt.Printf("missing required flags to load balancer policy. [use --help to show required flags]\n")
+				fmt.Printf("missing required flags to create load balancer. [use --help to show required flags]\n")
 				return
 			}
 
@@ -103,10 +104,56 @@ func create(client *clc.Client) cli.Command {
 	}
 }
 
+func getPool(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "get-pool",
+		Aliases: []string{"gp"},
+		Usage:   "get load balancer pool details",
+		Flags: []cli.Flag{
+			cli.BoolFlag{Name: "all", Usage: "list all load balancers for location"},
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.StringFlag{Name: "pool", Usage: "load balancer pool id"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("location") == "" || c.String("id") == "" {
+				fmt.Printf("missing required flags to get pool. [use --help to show required flags]\n")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			if c.Bool("all") || c.String("pool") == "" {
+				resp, err := client.LB.GetAllPools(c.String("location"), c.String("id"))
+				if err != nil {
+					log.Fatalf("failed to get %s\n", c.Args().First())
+				}
+				b, err := json.MarshalIndent(resp, "", "  ")
+				if err != nil {
+					log.Printf("%s\n", err)
+					os.Exit(1)
+				}
+				fmt.Printf("%s\n", b)
+				return
+			}
+			resp, err := client.LB.GetPool(c.String("location"), c.String("id"), c.String("pool"))
+			if err != nil {
+				log.Fatalf("failed to get %s\n", c.Args().First())
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				log.Printf("%s\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
 func createPool(client *clc.Client) cli.Command {
 	return cli.Command{
 		Name:    "create-pool",
-		Aliases: []string{"p"},
+		Aliases: []string{"cp"},
 		Usage:   "create load balancer pool",
 		Flags: []cli.Flag{
 			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
