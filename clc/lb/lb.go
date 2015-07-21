@@ -3,8 +3,6 @@ package lb
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
 
 	"github.com/codegangsta/cli"
 	"github.com/mikebeyer/clc-sdk/sdk/clc"
@@ -46,24 +44,26 @@ func get(client *clc.Client) cli.Command {
 			if c.Bool("all") || c.String("id") == "" {
 				resp, err := client.LB.GetAll(c.String("location"))
 				if err != nil {
-					log.Fatalf("failed to get %s\n", c.Args().First())
+					fmt.Printf("failed to get %s\n", c.Args().First())
+					return
 				}
 				b, err := json.MarshalIndent(resp, "", "  ")
 				if err != nil {
-					log.Printf("%s\n", err)
-					os.Exit(1)
+					fmt.Printf("%s\n", err)
+					return
 				}
 				fmt.Printf("%s\n", b)
 				return
 			}
 			resp, err := client.LB.Get(c.String("location"), c.String("id"))
 			if err != nil {
-				log.Fatalf("failed to get %s\n", c.Args().First())
+				fmt.Printf("failed to get %s\n", c.Args().First())
+				return
 			}
 			b, err := json.MarshalIndent(resp, "", "  ")
 			if err != nil {
-				log.Printf("%s\n", err)
-				os.Exit(1)
+				fmt.Printf("%s\n", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},
@@ -126,24 +126,26 @@ func getPool(client *clc.Client) cli.Command {
 			if c.Bool("all") || c.String("pool") == "" {
 				resp, err := client.LB.GetAllPools(c.String("location"), c.String("id"))
 				if err != nil {
-					log.Fatalf("failed to get %s\n", c.Args().First())
+					fmt.Printf("failed to get %s\n", c.Args().First())
+					return
 				}
 				b, err := json.MarshalIndent(resp, "", "  ")
 				if err != nil {
-					log.Printf("%s\n", err)
-					os.Exit(1)
+					fmt.Printf("%s\n", err)
+					return
 				}
 				fmt.Printf("%s\n", b)
 				return
 			}
 			resp, err := client.LB.GetPool(c.String("location"), c.String("id"), c.String("pool"))
 			if err != nil {
-				log.Fatalf("failed to get %s\n", c.Args().First())
+				fmt.Printf("failed to get %s\n", c.Args().First())
+				return
 			}
 			b, err := json.MarshalIndent(resp, "", "  ")
 			if err != nil {
-				log.Printf("%s\n", err)
-				os.Exit(1)
+				fmt.Printf("%s\n", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},

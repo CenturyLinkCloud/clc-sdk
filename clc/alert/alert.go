@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -121,7 +119,6 @@ func create(client *clc.Client) cli.Command {
 			a.Triggers = append(a.Triggers, mems...)
 			policy, err := client.Alert.Create(a)
 			if err != nil {
-				log.Printf("err: %s\n", err)
 				fmt.Printf("failed to create policy")
 				return
 			}
@@ -129,7 +126,7 @@ func create(client *clc.Client) cli.Command {
 			b, err := json.MarshalIndent(policy, "", "  ")
 			if err != nil {
 				fmt.Printf("%s", err)
-				os.Exit(1)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},
@@ -193,7 +190,7 @@ func delete(client *clc.Client) cli.Command {
 			err := client.Alert.Delete(c.Args().First())
 			if err != nil {
 				fmt.Printf("failed to get %s", c.Args().First())
-				os.Exit(1)
+				return
 			}
 			fmt.Printf("deleted policy %s\n", c.Args().First())
 		},

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -44,12 +42,13 @@ func get(client *clc.Client) cli.Command {
 		Action: func(c *cli.Context) {
 			server, err := client.Server.Get(c.Args().First())
 			if err != nil {
-				log.Fatalf("failed to get %s", c.Args().First())
+				fmt.Printf("failed to get %s", c.Args().First())
+				return
 			}
 			b, err := json.MarshalIndent(server, "", "  ")
 			if err != nil {
-				log.Printf("%s", err)
-				os.Exit(1)
+				fmt.Printf("%s", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},
@@ -130,12 +129,13 @@ func delete(client *clc.Client) cli.Command {
 		Action: func(c *cli.Context) {
 			server, err := client.Server.Delete(c.Args().First())
 			if err != nil {
-				log.Fatalf("failed to delete %s", c.Args().First())
+				fmt.Printf("failed to delete %s", c.Args().First())
+				return
 			}
 			b, err := json.MarshalIndent(server, "", "  ")
 			if err != nil {
-				log.Printf("%s", err)
-				os.Exit(1)
+				fmt.Printf("%s", err)
+				return
 			}
 			fmt.Printf("%s\n", b)
 		},
