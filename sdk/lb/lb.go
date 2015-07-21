@@ -18,6 +18,13 @@ type Service struct {
 	config *api.Config
 }
 
+func (s *Service) Get(dc, id string) (*LoadBalancer, error) {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s", s.config.BaseURL, s.config.Alias, dc, id)
+	resp := &LoadBalancer{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
 func (s *Service) Create(dc string, lb LoadBalancer) (*LoadBalancer, error) {
 	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s", s.config.BaseURL, s.config.Alias, dc)
 	resp := &LoadBalancer{}

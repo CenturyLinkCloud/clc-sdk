@@ -11,6 +11,20 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestGetLB(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345", mock.Anything).Return(nil)
+	service := lb.New(client)
+
+	id := "12345"
+	resp, err := service.Get("dc1", id)
+
+	assert.Nil(err)
+	assert.Equal(id, resp.ID)
+}
+
 func TestCreateLB(t *testing.T) {
 	assert := assert.New(t)
 
@@ -39,6 +53,9 @@ type MockClient struct {
 }
 
 func (m *MockClient) Get(url string, resp interface{}) error {
+	if strings.HasSuffix(url, "12345") {
+		json.Unmarshal([]byte(`{"id":"12345","name":"new","description":"balancing load","ipAddress":"10.10.10.10","status":"enabled","pools":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345","verbs":["GET","PUT","DELETE"]},{"rel":"pools","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools","verbs":["GET","POST"]}]}`), resp)
+	}
 	args := m.Called(url, resp)
 	return args.Error(0)
 }
