@@ -17,7 +17,32 @@ func Commands(client *clc.Client) cli.Command {
 		Aliases: []string{"lb"},
 		Usage:   "load balancer api",
 		Subcommands: []cli.Command{
+			get(client),
 			create(client),
+		},
+	}
+}
+
+func get(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "get",
+		Aliases: []string{"g"},
+		Usage:   "get load balancer details",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+		},
+		Action: func(c *cli.Context) {
+			resp, err := client.LB.Get(c.String("location"), c.String("id"))
+			if err != nil {
+				log.Fatalf("failed to get %s\n", c.Args().First())
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				log.Printf("%s\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("%s\n", b)
 		},
 	}
 }
