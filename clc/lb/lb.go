@@ -3,6 +3,8 @@ package lb
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/mikebeyer/clc-sdk/sdk/clc"
@@ -20,6 +22,7 @@ func Commands(client *clc.Client) cli.Command {
 			getPool(client),
 			createPool(client),
 			getNode(client),
+			updateNode(client),
 		},
 	}
 }
@@ -114,7 +117,7 @@ func getPool(client *clc.Client) cli.Command {
 			cli.BoolFlag{Name: "all", Usage: "list all load balancers for location"},
 			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
 			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
-			cli.StringFlag{Name: "pool", Usage: "load balancer pool id"},
+			cli.StringFlag{Name: "pool, p", Usage: "load balancer pool id"},
 		},
 		Before: func(c *cli.Context) error {
 			if c.String("location") == "" || c.String("id") == "" {
@@ -221,7 +224,7 @@ func getNode(client *clc.Client) cli.Command {
 		Flags: []cli.Flag{
 			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
 			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
-			cli.StringFlag{Name: "pool", Usage: "load balancer pool id [required]"},
+			cli.StringFlag{Name: "pool, p", Usage: "load balancer pool id [required]"},
 		},
 		Before: func(c *cli.Context) error {
 			if c.String("location") == "" || c.String("id") == "" || c.String("pool") == "" {
@@ -242,6 +245,49 @@ func getNode(client *clc.Client) cli.Command {
 				return
 			}
 			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func updateNode(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "update-node",
+		Aliases: []string{"un"},
+		Usage:   "update load balancer node details",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.StringFlag{Name: "pool, p", Usage: "load balancer pool id [required]"},
+			cli.StringSliceFlag{Name: "host, h", Usage: "node hostname and port (ex. 10.10.10.10:8080)"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("location") == "" || c.String("id") == "" || c.String("pool") == "" {
+				fmt.Printf("missing required flags to get pool. [use --help to show required flags]\n")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			nodes := make([]lb.Node, len(c.StringSlice("host")))
+			for i, v := range c.StringSlice("host") {
+				split := strings.Split(v, ":")
+				port, err := strconv.Atoi(split[1])
+				if err != nil {
+					fmt.Printf("failed parsing %s", v)
+					return
+				}
+				node := lb.Node{
+					IPaddress:   split[0],
+					PrivatePort: port,
+				}
+				nodes[i] = node
+			}
+			err := client.LB.UpdateNodes(c.String("location"), c.String("id"), c.String("pool"), nodes...)
+			if err != nil {
+				fmt.Printf("failed to update nodes\n")
+				return
+			}
+			fmt.Printf("nodes updates for pool %s\n", c.String("pool"))
 		},
 	}
 }
