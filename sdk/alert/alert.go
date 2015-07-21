@@ -57,11 +57,11 @@ type Alerts struct {
 }
 
 type Alert struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Actions  []Action  `json:"actions"`
-	Triggers []Trigger `json:"triggers"`
-	Links    api.Links `json:"links"`
+	ID       string    `json:"id,omitempty"`
+	Name     string    `json:"name,omitempty"`
+	Actions  []Action  `json:"actions,omitempty"`
+	Triggers []Trigger `json:"triggers,omitempty"`
+	Links    api.Links `json:"links,omitempty"`
 }
 
 type Action struct {

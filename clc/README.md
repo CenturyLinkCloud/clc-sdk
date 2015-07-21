@@ -17,5 +17,11 @@ clc cli
    - get
  - anti-affinity api
    - get
+   - get all
    - create
    - delete
+ - alert api
+    - get
+    - get all
+    - create
+    - delete
