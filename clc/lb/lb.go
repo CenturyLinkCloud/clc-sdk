@@ -33,6 +33,13 @@ func get(client *clc.Client) cli.Command {
 			cli.StringFlag{Name: "id", Usage: "load balancer id"},
 			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
 		},
+		Before: func(c *cli.Context) error {
+			if c.String("location") == "" {
+				fmt.Printf("location flag is required.\n")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
 		Action: func(c *cli.Context) {
 			if c.Bool("all") || c.String("id") == "" {
 				resp, err := client.LB.GetAll(c.String("location"))
