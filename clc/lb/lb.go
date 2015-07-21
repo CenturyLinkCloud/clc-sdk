@@ -29,10 +29,24 @@ func get(client *clc.Client) cli.Command {
 		Aliases: []string{"g"},
 		Usage:   "get load balancer details",
 		Flags: []cli.Flag{
+			cli.BoolFlag{Name: "all", Usage: "list all load balancers for location"},
 			cli.StringFlag{Name: "id", Usage: "load balancer id"},
 			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
 		},
 		Action: func(c *cli.Context) {
+			if c.Bool("all") || c.String("id") == "" {
+				resp, err := client.LB.GetAll(c.String("location"))
+				if err != nil {
+					log.Fatalf("failed to get %s\n", c.Args().First())
+				}
+				b, err := json.MarshalIndent(resp, "", "  ")
+				if err != nil {
+					log.Printf("%s\n", err)
+					os.Exit(1)
+				}
+				fmt.Printf("%s\n", b)
+				return
+			}
 			resp, err := client.LB.Get(c.String("location"), c.String("id"))
 			if err != nil {
 				log.Fatalf("failed to get %s\n", c.Args().First())
