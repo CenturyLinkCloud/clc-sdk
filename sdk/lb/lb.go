@@ -39,6 +39,20 @@ func (s *Service) Create(dc string, lb LoadBalancer) (*LoadBalancer, error) {
 	return resp, err
 }
 
+func (s *Service) GetPool(dc, lb, pool string) (*Pool, error) {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools/%s", s.config.BaseURL, s.config.Alias, dc, lb, pool)
+	resp := &Pool{}
+	err := s.client.Get(url, resp)
+	return resp, err
+}
+
+func (s *Service) GetAllPools(dc, lb string) ([]*Pool, error) {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools", s.config.BaseURL, s.config.Alias, dc, lb)
+	resp := make([]*Pool, 0)
+	err := s.client.Get(url, &resp)
+	return resp, err
+}
+
 func (s *Service) CreatePool(dc, lb string, pool Pool) (*Pool, error) {
 	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools", s.config.BaseURL, s.config.Alias, dc, lb)
 	resp := &Pool{}

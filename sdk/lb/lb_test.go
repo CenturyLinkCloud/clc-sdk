@@ -57,6 +57,33 @@ func TestCreateLB(t *testing.T) {
 	assert.NotEmpty(resp.ID)
 }
 
+func TestGetLBPool(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345/pools/56789", mock.Anything).Return(nil)
+	service := lb.New(client)
+
+	id := "56789"
+	resp, err := service.GetPool("dc1", "12345", id)
+
+	assert.Nil(err)
+	assert.Equal(id, resp.ID)
+}
+
+func TestGetLBPools(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345/pools", mock.Anything).Return(nil)
+	service := lb.New(client)
+
+	resp, err := service.GetAllPools("dc1", "12345")
+
+	assert.Nil(err)
+	assert.Equal(1, len(resp))
+}
+
 func TestCreateLBPool(t *testing.T) {
 	assert := assert.New(t)
 
@@ -88,6 +115,10 @@ type MockClient struct {
 func (m *MockClient) Get(url string, resp interface{}) error {
 	if strings.HasSuffix(url, "12345") {
 		json.Unmarshal([]byte(`{"id":"12345","name":"new","description":"balancing load","ipAddress":"10.10.10.10","status":"enabled","pools":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345","verbs":["GET","PUT","DELETE"]},{"rel":"pools","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools","verbs":["GET","POST"]}]}`), resp)
+	} else if strings.HasSuffix(url, "56789") {
+		json.Unmarshal([]byte(`{"id":"56789","port":80,"method":"leastConnection","persistence":"standard","links":[{"rel":"self","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789","verbs":["GET","PUT","DELETE"]},{"rel":"nodes","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789/nodes","verbs":["GET","PUT"]}]}`), resp)
+	} else if strings.Contains(url, "pools") {
+		json.Unmarshal([]byte(`[{"id":"56789","port":80,"method":"leastConnection","persistence":"standard","links":[{"rel":"self","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789","verbs":["GET","PUT","DELETE"]},{"rel":"nodes","href":"/v2/sharedLoadBalancers/t3bk/va1/12345/pools/56789/nodes","verbs":["GET","PUT"]}]}]`), resp)
 	} else {
 		json.Unmarshal([]byte(`[{"id":"12345","name":"new","description":"balancing load","ipAddress":"10.10.10.10","status":"enabled","pools":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345","verbs":["GET","PUT","DELETE"]},{"rel":"pools","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools","verbs":["GET","POST"]}]}]`), resp)
 	}
