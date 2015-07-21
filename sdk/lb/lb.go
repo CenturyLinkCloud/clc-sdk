@@ -25,6 +25,13 @@ func (s *Service) Get(dc, id string) (*LoadBalancer, error) {
 	return resp, err
 }
 
+func (s *Service) GetAll(dc string) ([]*LoadBalancer, error) {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s", s.config.BaseURL, s.config.Alias, dc)
+	resp := make([]*LoadBalancer, 0)
+	err := s.client.Get(url, &resp)
+	return resp, err
+}
+
 func (s *Service) Create(dc string, lb LoadBalancer) (*LoadBalancer, error) {
 	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s", s.config.BaseURL, s.config.Alias, dc)
 	resp := &LoadBalancer{}
