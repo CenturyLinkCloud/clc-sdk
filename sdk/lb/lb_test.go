@@ -117,6 +117,22 @@ func TestGetAllNodes(t *testing.T) {
 	assert.Equal(2, len(resp))
 }
 
+func TestUpdateNodes(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Put", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345/pools/56789/nodes", mock.Anything, nil).Return(nil)
+	service := lb.New(client)
+
+	node := lb.Node{
+		IPaddress:   "10.0.0.0",
+		PrivatePort: 8080,
+	}
+	err := service.UpdateNodes("dc1", "12345", "56789", node)
+
+	assert.Nil(err)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }

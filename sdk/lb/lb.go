@@ -67,6 +67,12 @@ func (s *Service) GetAllNodes(dc, lb, pool string) ([]*Node, error) {
 	return resp, err
 }
 
+func (s *Service) UpdateNodes(dc, lb, pool string, nodes ...Node) error {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools/%s/nodes", s.config.BaseURL, s.config.Alias, dc, lb, pool)
+	err := s.client.Put(url, nodes, nil)
+	return err
+}
+
 type LoadBalancer struct {
 	ID          string    `json:"id,omitempty"`
 	Name        string    `json:"name"`
@@ -87,7 +93,7 @@ type Pool struct {
 }
 
 type Node struct {
-	Status      string `json:"status"`
+	Status      string `json:"status,omitempty"`
 	IPaddress   string `json:"ipAddress"`
 	PrivatePort int    `json:"privatePort"`
 }
