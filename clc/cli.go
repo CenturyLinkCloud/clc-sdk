@@ -6,6 +6,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/mikebeyer/clc-sdk/clc/aa"
 	"github.com/mikebeyer/clc-sdk/clc/alert"
+	"github.com/mikebeyer/clc-sdk/clc/lb"
 	"github.com/mikebeyer/clc-sdk/clc/server"
 	"github.com/mikebeyer/clc-sdk/clc/status"
 	"github.com/mikebeyer/clc-sdk/sdk/api"
@@ -22,7 +23,7 @@ func main() {
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Mike Beyer",
-			Email: "michael.beyer@centurylink.com",
+			Email: "michael.beyer@ctl.io",
 		},
 	}
 	app.Commands = []cli.Command{
@@ -30,6 +31,7 @@ func main() {
 		status.Commands(client),
 		aa.Commands(client),
 		alert.Commands(client),
+		lb.Commands(client),
 	}
 	app.Run(os.Args)
 }
