@@ -19,6 +19,7 @@ func Commands(client *clc.Client) cli.Command {
 		Subcommands: []cli.Command{
 			get(client),
 			create(client),
+			createPool(client),
 		},
 	}
 }
@@ -90,6 +91,66 @@ func create(client *clc.Client) cli.Command {
 			resp, err := client.LB.Create(loc, lb)
 			if err != nil {
 				fmt.Printf("failed to create load balancer [%s] in %s\n", name, loc)
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				fmt.Printf("%s\n", err)
+				return
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func createPool(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "create-pool",
+		Aliases: []string{"p"},
+		Usage:   "create load balancer pool",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.IntFlag{Name: "port", Usage: "pool port [required]"},
+			cli.BoolFlag{Name: "sticky", Usage: "use stick persistence"},
+			cli.BoolFlag{Name: "standard", Usage: "use standard persistence [default]"},
+			cli.BoolFlag{Name: "least-connection, lc", Usage: "use least-connection load balacing"},
+			cli.BoolFlag{Name: "round-robin, rr", Usage: "use round-robin load balacing [default]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.Bool("sticky") && c.Bool("standard") {
+				fmt.Println("only one of sticky and standard can be selected")
+				return fmt.Errorf("")
+			}
+
+			if c.Bool("least-connection") && c.Bool("round-robin") {
+				fmt.Println("only one of least-connection and round-robin can be selected")
+				return fmt.Errorf("")
+			}
+
+			if c.String("id") == "" || c.String("location") == "" || c.Int("port") == 0 {
+				fmt.Println("missing required flags, --help for more details")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			pool := lb.Pool{Port: c.Int("port")}
+			if c.Bool("sticky") {
+				pool.Persistence = lb.Sticky
+			} else {
+				pool.Persistence = lb.Standard
+			}
+
+			if c.Bool("least-connection") {
+				pool.Method = lb.LeastConn
+			} else {
+				pool.Method = lb.RoundRobin
+			}
+
+			resp, err := client.LB.CreatePool(c.String("location"), c.String("id"), pool)
+			if err != nil {
+				fmt.Printf("failed to create load balancer pool for [%s] in %s\n", c.String("id"), c.String("location"))
 				return
 			}
 			b, err := json.MarshalIndent(resp, "", "  ")
