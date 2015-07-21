@@ -21,6 +21,7 @@ func Commands(client *clc.Client) cli.Command {
 			create(client),
 			getPool(client),
 			createPool(client),
+			updatePool(client),
 			getNode(client),
 			updateNode(client),
 		},
@@ -216,6 +217,60 @@ func createPool(client *clc.Client) cli.Command {
 	}
 }
 
+func updatePool(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "update-pool",
+		Aliases: []string{"up"},
+		Usage:   "update load balancer pool",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.StringFlag{Name: "pool, p", Usage: "load balancer pool id [required]"},
+			cli.BoolFlag{Name: "sticky", Usage: "use stick persistence"},
+			cli.BoolFlag{Name: "standard", Usage: "use standard persistence [default]"},
+			cli.BoolFlag{Name: "least-connection, lc", Usage: "use least-connection load balacing"},
+			cli.BoolFlag{Name: "round-robin, rr", Usage: "use round-robin load balacing [default]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.Bool("sticky") && c.Bool("standard") {
+				fmt.Println("only one of sticky and standard can be selected")
+				return fmt.Errorf("")
+			}
+
+			if c.Bool("least-connection") && c.Bool("round-robin") {
+				fmt.Println("only one of least-connection and round-robin can be selected")
+				return fmt.Errorf("")
+			}
+
+			if c.String("id") == "" || c.String("location") == "" || c.String("pool") == "" {
+				fmt.Println("missing required flags, --help for more details")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			pool := lb.Pool{}
+			if c.Bool("sticky") {
+				pool.Persistence = lb.Sticky
+			} else {
+				pool.Persistence = lb.Standard
+			}
+
+			if c.Bool("least-connection") {
+				pool.Method = lb.LeastConn
+			} else {
+				pool.Method = lb.RoundRobin
+			}
+
+			err := client.LB.UpdatePool(c.String("location"), c.String("id"), c.String("pool"), pool)
+			if err != nil {
+				fmt.Printf("failed to update load balancer pool [%s] in %s\n", c.String("pool"), c.String("location"))
+				return
+			}
+			fmt.Printf("successfully updated pool [%s]\n", c.String("pool"))
+		},
+	}
+}
 func getNode(client *clc.Client) cli.Command {
 	return cli.Command{
 		Name:    "get-node",
