@@ -39,6 +39,13 @@ func (s *Service) Create(dc string, lb LoadBalancer) (*LoadBalancer, error) {
 	return resp, err
 }
 
+func (s *Service) CreatePool(dc, lb string, pool Pool) (*Pool, error) {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools", s.config.BaseURL, s.config.Alias, dc, lb)
+	resp := &Pool{}
+	err := s.client.Post(url, pool, resp)
+	return resp, err
+}
+
 type LoadBalancer struct {
 	ID          string    `json:"id,omitempty"`
 	Name        string    `json:"name"`
@@ -50,4 +57,27 @@ type LoadBalancer struct {
 }
 
 type Pool struct {
+	ID          string      `json:"id,omitempty"`
+	Port        int         `json:"port"`
+	Method      Method      `json:"method"`
+	Persistence Persistence `json:"persistence"`
+	Nodes       []Node      `json:"nodes,omitempty"`
+	Links       api.Links   `json:"links,omitempty"`
 }
+
+type Node struct {
+}
+
+type Persistence string
+
+const (
+	Standard Persistence = "standard"
+	Sticky   Persistence = "sticky"
+)
+
+type Method string
+
+const (
+	LeastConn  Method = "leastConnection"
+	RoundRobin Method = "roundRobin"
+)

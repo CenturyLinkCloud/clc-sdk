@@ -57,6 +57,26 @@ func TestCreateLB(t *testing.T) {
 	assert.NotEmpty(resp.ID)
 }
 
+func TestCreateLBPool(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345/pools", mock.Anything, mock.Anything).Return(nil)
+	service := lb.New(client)
+
+	pool := lb.Pool{
+		Port:        80,
+		Method:      lb.LeastConn,
+		Persistence: lb.Sticky,
+	}
+
+	resp, err := service.CreatePool("dc1", "12345", pool)
+
+	assert.Nil(err)
+	assert.Equal(pool.Port, resp.Port)
+	assert.NotEmpty(resp.ID)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
@@ -77,7 +97,11 @@ func (m *MockClient) Get(url string, resp interface{}) error {
 }
 
 func (m *MockClient) Post(url string, body, resp interface{}) error {
-	json.Unmarshal([]byte(`{"id":"12345","name":"new","description":"balancing load","ipAddress":"10.10.10.10","status":"enabled","pools":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345","verbs":["GET","PUT","DELETE"]},{"rel":"pools","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools","verbs":["GET","POST"]}]}`), resp)
+	if strings.HasSuffix(url, "pools") {
+		json.Unmarshal([]byte(`{"id":"56789","port":80,"method":"leastConnection","persistence":"sticky","nodes":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools/56789","verbs":["GET","PUT","DELETE"]},{"rel":"nodes","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools/56789/nodes","verbs":["GET","PUT"]}]}`), resp)
+	} else {
+		json.Unmarshal([]byte(`{"id":"12345","name":"new","description":"balancing load","ipAddress":"10.10.10.10","status":"enabled","pools":[],"links":[{"rel":"self","href":"/v2/sharedLoadBalancers/test/dc1/12345","verbs":["GET","PUT","DELETE"]},{"rel":"pools","href":"/v2/sharedLoadBalancers/test/dc1/12345/pools","verbs":["GET","POST"]}]}`), resp)
+	}
 	args := m.Called(url, body, resp)
 	return args.Error(0)
 }
