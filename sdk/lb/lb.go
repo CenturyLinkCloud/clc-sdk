@@ -60,6 +60,12 @@ func (s *Service) CreatePool(dc, lb string, pool Pool) (*Pool, error) {
 	return resp, err
 }
 
+func (s *Service) UpdatePool(dc, lb, id string, pool Pool) error {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools/%s", s.config.BaseURL, s.config.Alias, dc, lb, id)
+	err := s.client.Put(url, pool, nil)
+	return err
+}
+
 func (s *Service) GetAllNodes(dc, lb, pool string) ([]*Node, error) {
 	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools/%s/nodes", s.config.BaseURL, s.config.Alias, dc, lb, pool)
 	resp := make([]*Node, 0)
@@ -85,7 +91,7 @@ type LoadBalancer struct {
 
 type Pool struct {
 	ID          string      `json:"id,omitempty"`
-	Port        int         `json:"port"`
+	Port        int         `json:"port,omitempty"`
 	Method      Method      `json:"method"`
 	Persistence Persistence `json:"persistence"`
 	Nodes       []Node      `json:"nodes,omitempty"`

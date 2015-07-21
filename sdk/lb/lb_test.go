@@ -110,6 +110,23 @@ func TestCreateLBPool(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestUpdatePool(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Put", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345/pools/56789", mock.Anything, nil).Return(nil)
+	service := lb.New(client)
+
+	pool := lb.Pool{
+		Method:      lb.LeastConn,
+		Persistence: lb.Sticky,
+	}
+	err := service.UpdatePool("dc1", "12345", "56789", pool)
+
+	assert.Nil(err)
+	client.AssertExpectations(t)
+}
+
 func TestGetAllNodes(t *testing.T) {
 	assert := assert.New(t)
 
