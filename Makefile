@@ -10,3 +10,6 @@ build:
 deploy: build
 	s3cmd -c ~/.s3cfgs/s3cfg_slos -P put clc-$(VERSION) s3://clc-cli/$(VERSION)/clc
 	rm clc-$(VERSION)
+deps:
+	go get github.com/tools/godep
+	godep restore
