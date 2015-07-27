@@ -60,6 +60,23 @@ func TestCreateLB(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestUpdateLB(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Put", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345", mock.Anything, nil).Return(nil)
+	service := lb.New(client)
+
+	lb := lb.LoadBalancer{
+		Name:        "new",
+		Description: "balancing load",
+	}
+	err := service.Update("dc1", "12345", lb)
+
+	assert.Nil(err)
+	client.AssertExpectations(t)
+}
+
 func TestGetLBPool(t *testing.T) {
 	assert := assert.New(t)
 

@@ -39,6 +39,12 @@ func (s *Service) Create(dc string, lb LoadBalancer) (*LoadBalancer, error) {
 	return resp, err
 }
 
+func (s *Service) Update(dc, id string, lb LoadBalancer) error {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s", s.config.BaseURL, s.config.Alias, dc, id)
+	err := s.client.Put(url, lb, nil)
+	return err
+}
+
 func (s *Service) GetPool(dc, lb, pool string) (*Pool, error) {
 	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools/%s", s.config.BaseURL, s.config.Alias, dc, lb, pool)
 	resp := &Pool{}
@@ -81,7 +87,7 @@ func (s *Service) UpdateNodes(dc, lb, pool string, nodes ...Node) error {
 
 type LoadBalancer struct {
 	ID          string    `json:"id,omitempty"`
-	Name        string    `json:"name"`
+	Name        string    `json:"name,omitempty"`
 	Description string    `json:"description,omitempty"`
 	IPaddress   string    `json:"ipAddress,omitempty"`
 	Status      string    `json:"status,omitempty"`
