@@ -337,6 +337,37 @@ func TestDeletePublicIP(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestArchiveServer(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/operations/test/servers/archive", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	serverA := "va1testserver01"
+	serverB := "va1testserver02"
+	resp, err := service.Archive(serverA, serverB)
+
+	assert.Nil(err)
+	assert.Equal(2, len(resp))
+	client.AssertExpectations(t)
+}
+
+func TestRestoreServer(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/servers/test/va1testserver01/restore", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	server := "va1testserver01"
+	resp, err := service.Restore(server, "12345")
+
+	assert.Nil(err)
+	assert.NotEmpty(resp.ID)
+	client.AssertExpectations(t)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
@@ -362,7 +393,7 @@ func (m *MockClient) Post(url string, body, resp interface{}) error {
 		json.Unmarshal([]byte(`{"server":"server","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/alias/status/wa1-12345","id":"wa1-12345"},{"rel":"self","href":"/v2/servers/alias/8134c91a66784c6dada651eba90a5123?uuid=True","id":"8134c91a66784c6dada651eba90a5123","verbs":["GET"]}]}`), resp)
 	}
 
-	if strings.HasSuffix(url, "publicIPAddresses") {
+	if strings.HasSuffix(url, "publicIPAddresses") || strings.HasSuffix(url, "restore") {
 		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
 	}
 

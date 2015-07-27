@@ -1,6 +1,6 @@
 VERSION=0.1
 
-.PHONY : test uats
+.PHONY : test uats build deploy deps
 test: 
 	godep go test ./sdk/...
 uats:
@@ -13,3 +13,5 @@ deploy: build
 deps:
 	go get github.com/tools/godep
 	godep restore
+clean:
+	rm clc-*

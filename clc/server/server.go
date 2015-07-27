@@ -23,6 +23,8 @@ func Commands(client *clc.Client) cli.Command {
 			create(client),
 			delete(client),
 			publicIP(client),
+			archive(client),
+			restore(client),
 		},
 	}
 }
@@ -133,6 +135,69 @@ func delete(client *clc.Client) cli.Command {
 				return
 			}
 			b, err := json.MarshalIndent(server, "", "  ")
+			if err != nil {
+				fmt.Printf("%s", err)
+				return
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func archive(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "archive",
+		Aliases: []string{"a"},
+		Usage:   "archive server",
+		Flags: []cli.Flag{
+			cli.StringSliceFlag{Name: "name, n", Usage: "name of servers to archive"},
+		},
+		Before: func(c *cli.Context) error {
+			if len(c.StringSlice("name")) == 0 {
+				fmt.Println("usage: -n [server] -n [server]")
+				return errors.New("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			resp, err := client.Server.Archive(c.StringSlice("name")...)
+			if err != nil {
+				fmt.Printf("failed to archive %s", strings.Join(c.StringSlice("name"), ", "))
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
+			if err != nil {
+				fmt.Printf("%s", err)
+				return
+			}
+			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func restore(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "restore",
+		Aliases: []string{"r"},
+		Usage:   "restore server",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "name, n", Usage: "name of server to restore [required]"},
+			cli.StringFlag{Name: "group, g", Usage: "group for server to restore to [required]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("name") == "" || c.String("group") == "" {
+				fmt.Println("missing required flags [--help for additional information]")
+				return errors.New("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			resp, err := client.Server.Restore(c.String("name"), c.String("group"))
+			if err != nil {
+				fmt.Printf("failed to restore %s", c.String("name"))
+				return
+			}
+			b, err := json.MarshalIndent(resp, "", "  ")
 			if err != nil {
 				fmt.Printf("%s", err)
 				return

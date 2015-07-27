@@ -65,6 +65,21 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	return resp, err
 }
 
+func (s *Service) Archive(servers ...string) ([]*QueuedResponse, error) {
+	url := fmt.Sprintf("%s/operations/%s/servers/archive", s.config.BaseURL, s.config.Alias)
+	var resp []*QueuedResponse
+	err := s.client.Post(url, servers, &resp)
+	return resp, err
+}
+
+func (s *Service) Restore(name, group string) (*status.Status, error) {
+	restore := map[string]string{"targetGroupId": group}
+	url := fmt.Sprintf("%s/servers/%s/%s/restore", s.config.BaseURL, s.config.Alias, name)
+	resp := &status.Status{}
+	err := s.client.Post(url, restore, resp)
+	return resp, err
+}
+
 func (s *Service) PowerState(state PowerState, servers ...string) ([]*QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/%s", s.config.BaseURL, s.config.Alias, state)
 	var resp []*QueuedResponse
