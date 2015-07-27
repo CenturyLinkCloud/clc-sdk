@@ -19,6 +19,7 @@ func Commands(client *clc.Client) cli.Command {
 		Subcommands: []cli.Command{
 			get(client),
 			create(client),
+			update(client),
 			getPool(client),
 			createPool(client),
 			updatePool(client),
@@ -105,6 +106,38 @@ func create(client *clc.Client) cli.Command {
 				return
 			}
 			fmt.Printf("%s\n", b)
+		},
+	}
+}
+
+func update(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "update",
+		Aliases: []string{"u"},
+		Usage:   "update shared load balancer",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "name, n", Usage: "load balancer name [required]"},
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.StringFlag{Name: "description, d", Usage: "load balancer description [required]"},
+		},
+		Action: func(c *cli.Context) {
+			id := c.String("id")
+			loc := c.String("location")
+			name := c.String("name")
+			desc := c.String("description")
+			if id == "" || loc == "" || name == "" || desc == "" {
+				fmt.Printf("missing required flags to update load balancer. [use --help to show required flags]\n")
+				return
+			}
+
+			lb := lb.LoadBalancer{Name: name, Description: desc}
+			err := client.LB.Update(loc, id, lb)
+			if err != nil {
+				fmt.Printf("failed to update load balancer [%s] in %s\n", lb.Name, loc)
+				return
+			}
+			fmt.Printf("successfully updated lb [%s]\n", id)
 		},
 	}
 }
