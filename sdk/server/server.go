@@ -80,6 +80,33 @@ func (s *Service) Restore(name, group string) (*status.Status, error) {
 	return resp, err
 }
 
+func (s *Service) CreateSnapshot(expiration int, servers ...string) ([]*QueuedResponse, error) {
+	snapshot := Snapshot{Expiration: expiration, Servers: servers}
+	url := fmt.Sprintf("%s/operations/%s/servers/createSnapshot", s.config.BaseURL, s.config.Alias)
+	var resp []*QueuedResponse
+	err := s.client.Post(url, snapshot, &resp)
+	return resp, err
+}
+
+func (s *Service) DeleteSnapshot(server, id string) (*status.Status, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/snapshots/%s", s.config.BaseURL, s.config.Alias, server, id)
+	resp := &status.Status{}
+	err := s.client.Delete(url, resp)
+	return resp, err
+}
+
+func (s *Service) RevertSnapshot(server, id string) (*status.Status, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/snapshots/%s/restore", s.config.BaseURL, s.config.Alias, server, id)
+	resp := &status.Status{}
+	err := s.client.Post(url, nil, resp)
+	return resp, err
+}
+
+type Snapshot struct {
+	Expiration int      `json:"snapshotExpirationDays"`
+	Servers    []string `json:"serverIds"`
+}
+
 func (s *Service) PowerState(state PowerState, servers ...string) ([]*QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/%s", s.config.BaseURL, s.config.Alias, state)
 	var resp []*QueuedResponse

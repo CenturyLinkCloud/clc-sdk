@@ -368,6 +368,53 @@ func TestRestoreServer(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestCreateSnapshot(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	snapshot := server.Snapshot{Expiration: 3, Servers: []string{"va1testserver01", "va1testserver02"}}
+	client.On("Post", "http://localhost/v2/operations/test/servers/createSnapshot", snapshot, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	serverA := "va1testserver01"
+	serverB := "va1testserver02"
+	resp, err := service.CreateSnapshot(3, serverA, serverB)
+
+	assert.Nil(err)
+	assert.Equal(2, len(resp))
+	client.AssertExpectations(t)
+}
+
+func TestDeleteSnapshot(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Delete", "http://localhost/v2/servers/test/va1testserver01/snapshots/4", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	server := "va1testserver01"
+	resp, err := service.DeleteSnapshot(server, "4")
+
+	assert.Nil(err)
+	assert.NotEmpty(resp.ID)
+	client.AssertExpectations(t)
+}
+
+func TestRevertSnapshot(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/servers/test/va1testserver01/snapshots/10/restore", nil, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	server := "va1testserver01"
+	resp, err := service.RevertSnapshot(server, "10")
+
+	assert.Nil(err)
+	assert.NotEmpty(resp.ID)
+	client.AssertExpectations(t)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
@@ -421,7 +468,7 @@ func (m *MockClient) Delete(url string, resp interface{}) error {
 	if strings.HasSuffix(url, "va1testserver01") {
 		json.Unmarshal([]byte(`{"server":"va1testserver01","isQueued":true,"links":[{"rel":"status","href":"/v2/operations/alias/status/wa1-12345","id":"wa1-12345"},{"rel":"self","href":"/v2/servers/alias/8134c91a66784c6dada651eba90a5123?uuid=True","id":"8134c91a66784c6dada651eba90a5123","verbs":["GET"]}]}`), resp)
 	}
-	if strings.HasSuffix(url, "10.0.0.1") {
+	if strings.HasSuffix(url, "10.0.0.1") || strings.Contains(url, "snapshot") {
 		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
 	}
 	args := m.Called(url, resp)
