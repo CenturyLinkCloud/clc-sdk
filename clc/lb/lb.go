@@ -20,9 +20,11 @@ func Commands(client *clc.Client) cli.Command {
 			get(client),
 			create(client),
 			update(client),
+			delete(client),
 			getPool(client),
 			createPool(client),
 			updatePool(client),
+			deletePool(client),
 			getNode(client),
 			updateNode(client),
 		},
@@ -142,6 +144,32 @@ func update(client *clc.Client) cli.Command {
 	}
 }
 
+func delete(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "delete",
+		Aliases: []string{"d"},
+		Usage:   "delete load balancer details",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("id") == "" || c.String("location") == "" {
+				fmt.Printf("missing required flags to delete load balancer. [use --help to show required flags]\n")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			err := client.LB.Delete(c.String("location"), c.String("id"))
+			if err != nil {
+				fmt.Printf("failed to get %s\n", c.Args().First())
+				return
+			}
+			fmt.Printf("successfully delete lb [%s]\n", c.String("id"))
+		},
+	}
+}
 func getPool(client *clc.Client) cli.Command {
 	return cli.Command{
 		Name:    "get-pool",
@@ -304,6 +332,35 @@ func updatePool(client *clc.Client) cli.Command {
 		},
 	}
 }
+
+func deletePool(client *clc.Client) cli.Command {
+	return cli.Command{
+		Name:    "delete-pool",
+		Aliases: []string{"dp"},
+		Usage:   "delete load balancer pool",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "id", Usage: "load balancer id [required]"},
+			cli.StringFlag{Name: "location, l", Usage: "load balancer location [required]"},
+			cli.StringFlag{Name: "pool, p", Usage: "load balancer pool id [required]"},
+		},
+		Before: func(c *cli.Context) error {
+			if c.String("location") == "" || c.String("id") == "" || c.String("pool") == "" {
+				fmt.Printf("missing required flags to get pool. [use --help to show required flags]\n")
+				return fmt.Errorf("")
+			}
+			return nil
+		},
+		Action: func(c *cli.Context) {
+			err := client.LB.DeletePool(c.String("location"), c.String("id"), c.String("pool"))
+			if err != nil {
+				fmt.Printf("failed to get %s\n", c.Args().First())
+				return
+			}
+			fmt.Printf("sucessfully deleted pool [%s] from lb [%s]\n", c.String("pool"), c.String("id"))
+		},
+	}
+}
+
 func getNode(client *clc.Client) cli.Command {
 	return cli.Command{
 		Name:    "get-node",
