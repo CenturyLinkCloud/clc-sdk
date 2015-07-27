@@ -77,6 +77,20 @@ func TestUpdateLB(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestDeleteLB(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Delete", "http://localhost/v2/sharedLoadBalancers/test/dc1/12345", mock.Anything).Return(nil)
+	service := lb.New(client)
+
+	id := "12345"
+	err := service.Delete("dc1", id)
+
+	assert.Nil(err)
+	client.AssertExpectations(t)
+}
+
 func TestGetLBPool(t *testing.T) {
 	assert := assert.New(t)
 

@@ -45,6 +45,11 @@ func (s *Service) Update(dc, id string, lb LoadBalancer) error {
 	return err
 }
 
+func (s *Service) Delete(dc, id string) error {
+	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s", s.config.BaseURL, s.config.Alias, dc, id)
+	return s.client.Delete(url, nil)
+}
+
 func (s *Service) GetPool(dc, lb, pool string) (*Pool, error) {
 	url := fmt.Sprintf("%s/sharedLoadBalancers/%s/%s/%s/pools/%s", s.config.BaseURL, s.config.Alias, dc, lb, pool)
 	resp := &Pool{}
