@@ -20,14 +20,14 @@ func TestCreateGroup(t *testing.T) {
 	group := group.Group{
 		Name:          "new",
 		Description:   "my awesome group",
-		Parentgroupid: "12345",
+		ParentGroupID: "12345",
 	}
 	resp, err := service.Create(group)
 
 	assert.Nil(err)
 	assert.Equal(group.Name, resp.Name)
 	assert.Equal(1, len(resp.Groups))
-	assert.Equal(group.Parentgroupid, resp.Groups[0].ID)
+	assert.Equal(group.ParentGroupID, resp.Groups[0].ID)
 	client.AssertExpectations(t)
 }
 

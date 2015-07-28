@@ -60,9 +60,9 @@ type Response struct {
 }
 type Group struct {
 	Name          string             `json:"name"`
-	Description   string             `json:"description"`
-	Parentgroupid string             `json:"parentGroupId"`
-	Customfields  []api.Customfields `json:"customFields"`
+	Description   string             `json:"description,omitempty"`
+	ParentGroupID string             `json:"parentGroupId"`
+	CustomFields  []api.Customfields `json:"customFields,omitempty"`
 }
 
 type Groups struct {
