@@ -107,6 +107,24 @@ type Snapshot struct {
 	Servers    []string `json:"serverIds"`
 }
 
+func (s *Service) ExecutePackage(pkg Package, servers ...string) ([]*QueuedResponse, error) {
+	url := fmt.Sprintf("%s/operations/%s/servers/executePackage", s.config.BaseURL, s.config.Alias)
+	var resp []*QueuedResponse
+	exec := executePackage{Servers: servers, Package: pkg}
+	err := s.client.Post(url, exec, &resp)
+	return resp, err
+}
+
+type executePackage struct {
+	Servers []string `json:"servers"`
+	Package Package  `json:"package"`
+}
+
+type Package struct {
+	ID     string            `json:"packageId"`
+	Params map[string]string `json:"parameters"`
+}
+
 func (s *Service) PowerState(state PowerState, servers ...string) ([]*QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/%s", s.config.BaseURL, s.config.Alias, state)
 	var resp []*QueuedResponse

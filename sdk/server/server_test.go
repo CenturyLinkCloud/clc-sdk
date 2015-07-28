@@ -415,6 +415,26 @@ func TestRevertSnapshot(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestExecutePackage(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/operations/test/servers/executePackage", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	serverA := "va1testserver01"
+	serverB := "va1testserver02"
+	pkg := server.Package{
+		ID:     "12345",
+		Params: map[string]string{"key1": "value1", "key2": "value2"},
+	}
+	resp, err := service.ExecutePackage(pkg, serverA, serverB)
+
+	assert.Nil(err)
+	assert.Equal(2, len(resp))
+	client.AssertExpectations(t)
+}
+
 func NewMockClient() *MockClient {
 	return &MockClient{}
 }
