@@ -24,4 +24,4 @@ done
 
 go tool cover -func profile.cov
 
-goveralls -coverprofile=profile.cov -service=codeship -repotoken $COVERALLS_REPO_TOKEN
+goveralls -coverprofile=profile.cov -service=travis-ci -repotoken $COVERALLS_REPO_TOKEN
