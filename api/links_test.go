@@ -3,7 +3,7 @@ package api_test
 import (
 	"testing"
 
-	"github.com/mikebeyer/clc-sdk/sdk/api"
+	"github.com/mikebeyer/clc-sdk/api"
 	"github.com/stretchr/testify/assert"
 )
 

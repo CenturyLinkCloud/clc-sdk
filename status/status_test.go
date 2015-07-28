@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikebeyer/clc-sdk/sdk/api"
-	"github.com/mikebeyer/clc-sdk/sdk/status"
+	"github.com/mikebeyer/clc-sdk/api"
+	"github.com/mikebeyer/clc-sdk/status"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -1,12 +1,12 @@
 package clc
 
 import (
-	"github.com/mikebeyer/clc-sdk/sdk/aa"
-	"github.com/mikebeyer/clc-sdk/sdk/alert"
-	"github.com/mikebeyer/clc-sdk/sdk/api"
-	"github.com/mikebeyer/clc-sdk/sdk/lb"
-	"github.com/mikebeyer/clc-sdk/sdk/server"
-	"github.com/mikebeyer/clc-sdk/sdk/status"
+	"github.com/mikebeyer/clc-sdk/aa"
+	"github.com/mikebeyer/clc-sdk/alert"
+	"github.com/mikebeyer/clc-sdk/api"
+	"github.com/mikebeyer/clc-sdk/lb"
+	"github.com/mikebeyer/clc-sdk/server"
+	"github.com/mikebeyer/clc-sdk/status"
 )
 
 type Client struct {

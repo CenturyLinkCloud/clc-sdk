@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mikebeyer/clc-sdk/sdk/api"
+	"github.com/mikebeyer/clc-sdk/api"
 )
 
 func New(client api.HTTP) *Service {
