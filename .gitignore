@@ -1,4 +1,3 @@
 *.swp
+*.cov
 Godeps/_workspace
-setup.env
-spec/clc

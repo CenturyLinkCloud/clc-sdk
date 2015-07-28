@@ -1,10 +1,11 @@
 VERSION=0.1
 
-.PHONY : test deps clean
+.PHONY : test cover deps
 test: 
 	godep go test ./...
+cover:
+	./cover.sh
 deps:
 	go get github.com/tools/godep
+	go get github.com/mattn/goveralls
 	godep restore
-clean:
-	rm clc-*
