@@ -38,35 +38,79 @@ func (c *Client) Config() *Config {
 }
 
 func (c *Client) Get(url string, resp interface{}) error {
-	return c.do("GET", url, nil, resp)
+	return c.DoWithAuth("GET", url, nil, resp)
 }
 
 func (c *Client) Post(url string, body, resp interface{}) error {
-	b, err := c.serialize(body)
-	if err != nil {
-		return err
-	}
-	return c.do("POST", url, b, resp)
+	return c.DoWithAuth("POST", url, body, resp)
 }
 
 func (c *Client) Put(url string, body, resp interface{}) error {
-	b, err := c.serialize(body)
-	if err != nil {
-		return err
-	}
-	return c.do("PUT", url, b, resp)
+	return c.DoWithAuth("PUT", url, body, resp)
 }
 
 func (c *Client) Patch(url string, body, resp interface{}) error {
+	return c.DoWithAuth("PATCH", url, body, resp)
+}
+
+func (c *Client) Delete(url string, resp interface{}) error {
+	return c.DoWithAuth("DELETE", url, nil, resp)
+}
+
+func (c *Client) Auth() error {
+	url := fmt.Sprintf("%s/authentication/login", c.config.BaseURL)
+	body, err := c.serialize(c.config.User)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	return c.Do(req, &c.Token)
+}
+
+func (c *Client) Do(req *http.Request, ret interface{}) error {
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("http err: [%s]", resp.Status)
+	}
+
+	if ret == nil {
+		return nil
+	}
+
+	return json.NewDecoder(resp.Body).Decode(ret)
+}
+
+func (c *Client) DoWithAuth(method, url string, body, ret interface{}) error {
+	if !c.Token.Valid() {
+		err := c.Auth()
+		if err != nil {
+			return err
+		}
+	}
+
 	b, err := c.serialize(body)
 	if err != nil {
 		return err
 	}
-	return c.do("PATCH", url, b, resp)
-}
 
-func (c *Client) Delete(url string, resp interface{}) error {
-	return c.do("DELETE", url, nil, resp)
+	req, err := http.NewRequest(method, url, b)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer "+c.Token.Token)
+
+	return c.Do(req, ret)
 }
 
 func (c *Client) serialize(body interface{}) (io.Reader, error) {
@@ -77,61 +121,6 @@ func (c *Client) serialize(body interface{}) (io.Reader, error) {
 	b := new(bytes.Buffer)
 	err := json.NewEncoder(b).Encode(body)
 	return b, err
-}
-
-func (c *Client) do(method, url string, body io.Reader, resp interface{}) error {
-	if !c.Token.Valid() {
-		token, err := c.Auth()
-		if err != nil {
-			return err
-		}
-		c.Token.Token = token
-	}
-
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+c.Token.Token)
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if res.StatusCode >= 400 {
-		return fmt.Errorf("http err: [%s]", res.Status)
-	}
-
-	if resp == nil {
-		return err
-	}
-	return json.NewDecoder(res.Body).Decode(resp)
-}
-
-func (c *Client) Auth() (string, error) {
-	url := fmt.Sprintf("%s/authentication/login", c.config.BaseURL)
-	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(c.config.User)
-	if err != nil {
-		return "", err
-	}
-
-	resp, err := http.Post(url, "application/json", b)
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf("http err: [%s]", resp.Status)
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&c.Token); err != nil {
-		return "", err
-	}
-
-	return c.Token.Token, nil
 }
 
 type Config struct {
