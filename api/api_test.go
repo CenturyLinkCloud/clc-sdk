@@ -3,6 +3,7 @@ package api_test
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -26,6 +27,40 @@ func TestEnvConfig(t *testing.T) {
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
 	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
+}
+
+func TestNewConfig(t *testing.T) {
+	assert := assert.New(t)
+
+	c := api.NewConfig("user", "pass", "alias")
+
+	assert.Equal("user", c.User.Username)
+	assert.Equal("pass", c.User.Password)
+	assert.Equal("alias", c.Alias)
+	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
+}
+
+func TestFileConfig(t *testing.T) {
+	assert := assert.New(t)
+
+	file, err := ioutil.TempFile("", "tmp")
+	assert.Nil(err)
+
+	conf := api.NewConfig("user", "pass", "alias")
+	b, _ := json.Marshal(conf)
+
+	assert.Nil(ioutil.WriteFile(file.Name(), b, 755))
+
+	c, err := api.FileConfig(file.Name())
+
+	assert.Nil(err)
+	assert.Equal("user", c.User.Username)
+	assert.Equal("pass", c.User.Password)
+	assert.Equal("alias", c.Alias)
+	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
+
+	file.Close()
+	os.Remove(file.Name())
 }
 
 func TestNewClient(t *testing.T) {

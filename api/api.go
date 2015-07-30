@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/mikebeyer/env"
@@ -124,9 +125,9 @@ func (c *Client) serialize(body interface{}) (io.Reader, error) {
 }
 
 type Config struct {
-	User    User
-	Alias   string
-	BaseURL string
+	User    User   `json:"user"`
+	Alias   string `json:"alias"`
+	BaseURL string `json:"-"`
 }
 
 func EnvConfig() Config {
@@ -138,6 +139,30 @@ func EnvConfig() Config {
 		Alias:   env.MustString("CLC_ALIAS"),
 		BaseURL: env.String("CLC_BASE_URL", "https://api.ctl.io/v2"),
 	}
+}
+
+func NewConfig(username, password, alias string) Config {
+	return Config{
+		User: User{
+			Username: username,
+			Password: password,
+		},
+		Alias:   alias,
+		BaseURL: "https://api.ctl.io/v2",
+	}
+}
+
+func FileConfig(file string) (Config, error) {
+	config := Config{}
+	b, err := ioutil.ReadFile(file)
+	if err != nil {
+		return config, err
+	}
+
+	err = json.Unmarshal(b, &config)
+
+	config.BaseURL = "https://api.ctl.io/v2"
+	return config, nil
 }
 
 type User struct {
