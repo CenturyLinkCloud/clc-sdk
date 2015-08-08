@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/mikebeyer/env"
 )
@@ -130,15 +131,24 @@ type Config struct {
 	BaseURL string `json:"-"`
 }
 
-func EnvConfig() Config {
-	return Config{
+func (c Config) Valid() bool {
+	return c.User.Username != "" && c.User.Password != "" && c.Alias != "" && c.BaseURL != ""
+}
+
+func EnvConfig() (Config, error) {
+	config := Config{
 		User: User{
-			Username: env.MustString("CLC_USERNAME"),
-			Password: env.MustString("CLC_PASSWORD"),
+			Username: os.Getenv("CLC_USERNAME"),
+			Password: os.Getenv("CLC_PASSWORD"),
 		},
-		Alias:   env.MustString("CLC_ALIAS"),
+		Alias:   os.Getenv("CLC_ALIAS"),
 		BaseURL: env.String("CLC_BASE_URL", "https://api.ctl.io/v2"),
 	}
+
+	if !config.Valid() {
+		return config, fmt.Errorf("missing environment variables [%s]", config)
+	}
+	return config, nil
 }
 
 func NewConfig(username, password, alias string) Config {

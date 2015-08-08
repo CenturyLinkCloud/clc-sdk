@@ -21,12 +21,24 @@ func TestEnvConfig(t *testing.T) {
 	os.Setenv("CLC_PASSWORD", "pass")
 	os.Setenv("CLC_ALIAS", "alias")
 
-	c := api.EnvConfig()
+	c, err := api.EnvConfig()
 
+	assert.Nil(err)
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
 	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
+}
+
+func TestInvalidEnvConfig(t *testing.T) {
+	assert := assert.New(t)
+
+	os.Setenv("CLC_USERNAME", "user")
+	os.Setenv("CLC_PASSWORD", "")
+
+	_, err := api.EnvConfig()
+
+	assert.NotNil(err)
 }
 
 func TestNewConfig(t *testing.T) {

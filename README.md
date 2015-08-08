@@ -18,7 +18,7 @@ The SDK supports two helpers for creating your configuration
 Reading from the environment
 
 ```go
-config := api.EnvConfig()
+config, _ := api.EnvConfig()
 ```
 
 Reading from a file
