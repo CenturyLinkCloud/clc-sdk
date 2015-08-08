@@ -4,7 +4,7 @@ CLC SDK (for go!) [![Build Status](https://travis-ci.org/mikebeyer/clc-sdk.svg?b
 Insallation
 ---------------------
 
-```
+```sh
 $ go get github.com/mikebeyer/clc-sdk
 $ make deps
 $ make test
