@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/mikebeyer/clc-sdk/api"
-	"github.com/mikebeyer/clc-sdk/status"
+	"github.com/CenturyLinkCloud/clc-sdk/api"
+	"github.com/CenturyLinkCloud/clc-sdk/status"
 )
 
 var (

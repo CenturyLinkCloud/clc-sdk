@@ -3,7 +3,7 @@ package alert
 import (
 	"fmt"
 
-	"github.com/mikebeyer/clc-sdk/api"
+	"github.com/CenturyLinkCloud/clc-sdk/api"
 )
 
 func New(client api.HTTP) *Service {

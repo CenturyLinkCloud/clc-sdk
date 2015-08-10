@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mikebeyer/clc-sdk/api"
+	"github.com/CenturyLinkCloud/clc-sdk/api"
 	"github.com/stretchr/testify/assert"
 )
 

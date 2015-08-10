@@ -1,13 +1,13 @@
 package clc
 
 import (
-	"github.com/mikebeyer/clc-sdk/aa"
-	"github.com/mikebeyer/clc-sdk/alert"
-	"github.com/mikebeyer/clc-sdk/api"
-	"github.com/mikebeyer/clc-sdk/group"
-	"github.com/mikebeyer/clc-sdk/lb"
-	"github.com/mikebeyer/clc-sdk/server"
-	"github.com/mikebeyer/clc-sdk/status"
+	"github.com/CenturyLinkCloud/clc-sdk/aa"
+	"github.com/CenturyLinkCloud/clc-sdk/alert"
+	"github.com/CenturyLinkCloud/clc-sdk/api"
+	"github.com/CenturyLinkCloud/clc-sdk/group"
+	"github.com/CenturyLinkCloud/clc-sdk/lb"
+	"github.com/CenturyLinkCloud/clc-sdk/server"
+	"github.com/CenturyLinkCloud/clc-sdk/status"
 )
 
 type Client struct {

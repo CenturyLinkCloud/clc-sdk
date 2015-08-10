@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mikebeyer/clc-sdk/aa"
-	"github.com/mikebeyer/clc-sdk/api"
+	"github.com/CenturyLinkCloud/clc-sdk/aa"
+	"github.com/CenturyLinkCloud/clc-sdk/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
