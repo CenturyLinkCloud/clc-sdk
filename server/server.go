@@ -65,6 +65,18 @@ func (s *Service) Delete(name string) (*QueuedResponse, error) {
 	return resp, err
 }
 
+func (s *Service) GetCredentials(name string) (Credentials, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/credentials", s.config.BaseURL, s.config.Alias, name)
+	resp := Credentials{}
+	err := s.client.Get(url, &resp)
+	return resp, err
+}
+
+type Credentials struct {
+	Username string `json:"userName"`
+	Password string `json:"password"`
+}
+
 func (s *Service) Archive(servers ...string) ([]*QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/archive", s.config.BaseURL, s.config.Alias)
 	var resp []*QueuedResponse
@@ -289,6 +301,7 @@ type Response struct {
 	Details     struct {
 		IPaddresses []struct {
 			Internal string `json:"internal"`
+			Public   string `json:"public"`
 		} `json:"ipAddresses"`
 		AlertPolicies []struct {
 			ID    string    `json:"id"`

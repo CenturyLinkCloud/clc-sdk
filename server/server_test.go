@@ -40,6 +40,21 @@ func TestGetServerByUUID(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestGetServerCredentials(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Get", "http://localhost/v2/servers/test/va1testserver01/credentials", mock.Anything).Return(nil)
+	service := server.New(client)
+
+	resp, err := service.GetCredentials("va1testserver01")
+
+	assert.Nil(err)
+	assert.Equal("user", resp.Username)
+	assert.Equal("pass", resp.Password)
+	client.AssertExpectations(t)
+}
+
 func TestCreateServer(t *testing.T) {
 	assert := assert.New(t)
 
@@ -444,6 +459,10 @@ type MockClient struct {
 }
 
 func (m *MockClient) Get(url string, resp interface{}) error {
+	if strings.HasSuffix(url, "credentials") {
+		json.Unmarshal([]byte(`{"userName":"user","password":"pass"}`), resp)
+	}
+
 	if strings.HasSuffix(url, "va1testserver01") || strings.HasSuffix(url, "?uuid=true") {
 		json.Unmarshal([]byte(serverJSON), resp)
 	}
@@ -451,6 +470,7 @@ func (m *MockClient) Get(url string, resp interface{}) error {
 	if strings.HasSuffix(url, "10.0.0.1") {
 		json.Unmarshal([]byte(`{"internalIPAddress":"10.0.0.1","ports":[{"protocol":"TCP","port":80}]}`), resp)
 	}
+
 	args := m.Called(url, resp)
 	return args.Error(0)
 }
