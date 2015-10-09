@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 
 	"github.com/mikebeyer/env"
 )
+
+var debug = os.Getenv("DEBUG") != ""
 
 func New(config Config) *Client {
 	return &Client{
@@ -76,13 +80,22 @@ func (c *Client) Auth() error {
 }
 
 func (c *Client) Do(req *http.Request, ret interface{}) error {
+	if debug {
+		v, _ := httputil.DumpRequest(req, true)
+		log.Println(string(v))
+	}
 	resp, err := c.client.Do(req)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("http err: [%s]", resp.Status)
+		b, _ := ioutil.ReadAll(resp.Body)
+		if debug {
+			log.Println(string(b))
+		}
+		return fmt.Errorf("http err: [%s] - %s", resp.Status, b)
 	}
 
 	if ret == nil {
