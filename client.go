@@ -4,6 +4,7 @@ import (
 	"github.com/CenturyLinkCloud/clc-sdk/aa"
 	"github.com/CenturyLinkCloud/clc-sdk/alert"
 	"github.com/CenturyLinkCloud/clc-sdk/api"
+	"github.com/CenturyLinkCloud/clc-sdk/dc"
 	"github.com/CenturyLinkCloud/clc-sdk/group"
 	"github.com/CenturyLinkCloud/clc-sdk/lb"
 	"github.com/CenturyLinkCloud/clc-sdk/server"
@@ -19,6 +20,7 @@ type Client struct {
 	Alert  *alert.Service
 	LB     *lb.Service
 	Group  *group.Service
+	DC     *dc.Service
 }
 
 func New(config api.Config) *Client {
@@ -32,6 +34,7 @@ func New(config api.Config) *Client {
 	c.Alert = alert.New(c.client)
 	c.LB = lb.New(c.client)
 	c.Group = group.New(c.client)
+	c.DC = dc.New(c.client)
 
 	return c
 }

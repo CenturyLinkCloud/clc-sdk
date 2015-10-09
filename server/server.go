@@ -193,6 +193,13 @@ func (s *Service) AddPublicIP(name string, ip PublicIP) (*status.Status, error) 
 	return resp, err
 }
 
+func (s *Service) UpdatePublicIP(name string, public string, ip PublicIP) (*status.Status, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.config.BaseURL, s.config.Alias, name, public)
+	resp := &status.Status{}
+	err := s.client.Put(url, ip, resp)
+	return resp, err
+}
+
 func (s *Service) DeletePublicIP(name, ip string) (*status.Status, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s/publicIPAddresses/%s", s.config.BaseURL, s.config.Alias, name, ip)
 	resp := &status.Status{}
