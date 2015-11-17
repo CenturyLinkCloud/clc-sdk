@@ -38,3 +38,8 @@ func New(config api.Config) *Client {
 
 	return c
 }
+
+func (c *Client) Alias(alias string) *Client {
+	c.client.Config().Alias = alias
+	return c
+}
