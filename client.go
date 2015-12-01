@@ -43,3 +43,7 @@ func (c *Client) Alias(alias string) *Client {
 	c.client.Config().Alias = alias
 	return c
 }
+
+func (c *Client) Authenticate() error {
+	return c.client.Auth()
+}
