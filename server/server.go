@@ -223,6 +223,13 @@ type SourceRestriction struct {
 	CIDR string `json:"cidr"`
 }
 
+type Disk struct {
+	DiskID string `json:"diskId,omitempty"`
+	Path   string `json:"path,omitempty"`
+	SizeGB int    `json:"sizeGB,omitempty"`
+	Type   string `json:"type,omitempty"`
+}
+
 func UpdateCPU(num int) api.Update {
 	return api.Update{
 		Op:     "set",
@@ -269,6 +276,22 @@ func UpdateDescription(desc string) api.Update {
 	}
 }
 
+func UpdateAdditionaldisks(disks []Disk) api.Update {
+	return api.Update{
+		Op:     "set",
+		Member: "disks",
+		Value:  disks,
+	}
+}
+
+func UpdateCustomfields(fields []api.Customfields) api.Update {
+	return api.Update{
+		Op:     "set",
+		Member: "customFields",
+		Value:  fields,
+	}
+}
+
 type Server struct {
 	Name            string             `json:"name"`
 	Description     string             `json:"description,omitempty"`
@@ -285,11 +308,7 @@ type Server struct {
 	Type            string             `json:"type"`
 	Storagetype     string             `json:"storageType,omitempty"`
 	Customfields    []api.Customfields `json:"customFields,omitempty"`
-	Additionaldisks []struct {
-		Path   string `json:"path"`
-		SizeGB int    `json:"sizeGB"`
-		Type   string `json:"type"`
-	} `json:"additionalDisks,omitempty"`
+	Additionaldisks []Disk             `json:"additionalDisks,omitempty"`
 }
 
 func (s *Server) Valid() bool {
