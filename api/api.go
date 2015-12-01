@@ -89,12 +89,12 @@ func (c *Client) Do(req *http.Request, ret interface{}) error {
 		log.Println(err)
 		return err
 	}
-
+	if debug && resp != nil {
+		v, _ := httputil.DumpResponse(resp, true)
+		log.Println(string(v))
+	}
 	if resp.StatusCode >= 400 {
 		b, _ := ioutil.ReadAll(resp.Body)
-		if debug {
-			log.Println(string(b))
-		}
 		return fmt.Errorf("http err: [%s] - %s", resp.Status, b)
 	}
 
