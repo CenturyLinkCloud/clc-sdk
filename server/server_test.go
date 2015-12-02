@@ -172,6 +172,53 @@ func TestUpdateServer_UpdateGroupAndDescription(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestUpdateServer_UpdateAdditionaldisks(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	disks := []server.Disk{
+		server.Disk{
+			Path:   "/data1",
+			SizeGB: 10,
+			Type:   "partitioned",
+		},
+	}
+	update := []api.Update{
+		api.Update{Op: "set", Member: "disks", Value: disks},
+	}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", update, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	name := "va1testserver01"
+	err := service.Edit(name, server.UpdateAdditionaldisks(disks))
+
+	assert.Nil(err)
+	client.AssertExpectations(t)
+}
+
+func TestUpdateServer_UpdateCustomfields(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	fields := []api.Customfields{
+		api.Customfields{
+			ID:    "deadbeef",
+			Value: "abracadabra",
+		},
+	}
+	update := []api.Update{
+		api.Update{Op: "set", Member: "customFields", Value: fields},
+	}
+	client.On("Patch", "http://localhost/v2/servers/test/va1testserver01", update, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	name := "va1testserver01"
+	err := service.Edit(name, server.UpdateCustomfields(fields))
+
+	assert.Nil(err)
+	client.AssertExpectations(t)
+}
+
 func TestDeleteServer(t *testing.T) {
 	assert := assert.New(t)
 
@@ -324,14 +371,34 @@ func TestGetPublicIP(t *testing.T) {
 	client.On("Get", "http://localhost/v2/servers/test/va1testserver01/publicIPAddresses/10.0.0.1", mock.Anything).Return(nil)
 	service := server.New(client)
 
-	ip := "10.0.0.1"
+	addr := "10.0.0.1"
 	name := "va1testserver01"
 
-	resp, err := service.GetPublicIP(name, ip)
+	resp, err := service.GetPublicIP(name, addr)
 
 	assert.Nil(err)
-	assert.Equal(ip, resp.InternalIP)
+	assert.Equal(addr, resp.InternalIP)
 	assert.Equal(1, len(resp.Ports))
+	client.AssertExpectations(t)
+}
+
+func TestUpdatePublicIP(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Put", "http://localhost/v2/servers/test/va1testserver01/publicIPAddresses/10.0.0.1", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	addr := "10.0.0.1"
+	name := "va1testserver01"
+	ip := server.PublicIP{}
+	ip.InternalIP = addr
+	ip.Ports = []server.Port{server.Port{Protocol: "TCP", Port: 443}}
+
+	resp, err := service.UpdatePublicIP(name, addr, ip)
+
+	assert.Nil(err)
+	assert.Equal("status", resp.Rel)
 	client.AssertExpectations(t)
 }
 
@@ -342,10 +409,10 @@ func TestDeletePublicIP(t *testing.T) {
 	client.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	service := server.New(client)
 
-	ip := "10.0.0.1"
+	addr := "10.0.0.1"
 	name := "va1testserver01"
 
-	resp, err := service.DeletePublicIP(name, ip)
+	resp, err := service.DeletePublicIP(name, addr)
 
 	assert.Nil(err)
 	assert.NotEmpty(resp.ID)
@@ -492,6 +559,10 @@ func (m *MockClient) Post(url string, body, resp interface{}) error {
 }
 
 func (m *MockClient) Put(url string, body, resp interface{}) error {
+	if strings.Index(url, "publicIPAddresses") != -1 {
+		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
+	}
+
 	args := m.Called(url, body, resp)
 	return args.Error(0)
 }
