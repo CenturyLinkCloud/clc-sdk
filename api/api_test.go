@@ -166,6 +166,16 @@ func TestGet(t *testing.T) {
 
 	status := "ok"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/json" {
+			http.Error(w, "accept missing", http.StatusBadRequest)
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "" {
+			http.Error(w, "content-type should not be present", http.StatusBadRequest)
+			return
+		}
+
 		if r.Method != "GET" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -191,6 +201,15 @@ func TestPost(t *testing.T) {
 	status := "ok"
 	actualReq := &Request{}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/json" {
+			http.Error(w, "accept missing", http.StatusBadRequest)
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "application/json" {
+			http.Error(w, "content-type missing", http.StatusBadRequest)
+			return
+		}
 		if r.Method != "POST" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -220,6 +239,15 @@ func TestPut(t *testing.T) {
 	status := "ok"
 	actualReq := &Request{}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/json" {
+			http.Error(w, "accept missing", http.StatusBadRequest)
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "application/json" {
+			http.Error(w, "content-type missing", http.StatusBadRequest)
+			return
+		}
 		if r.Method != "PUT" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -249,6 +277,15 @@ func TestPatch(t *testing.T) {
 	status := "ok"
 	actualReq := &Request{}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/json" {
+			http.Error(w, "accept missing", http.StatusBadRequest)
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "application/json" {
+			http.Error(w, "content-type missing", http.StatusBadRequest)
+			return
+		}
 		if r.Method != "PATCH" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -277,6 +314,15 @@ func TestDelete(t *testing.T) {
 
 	status := "ok"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/json" {
+			http.Error(w, "accept missing", http.StatusBadRequest)
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "" {
+			http.Error(w, "content-type should not be present", http.StatusBadRequest)
+			return
+		}
 		if r.Method != "DELETE" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return

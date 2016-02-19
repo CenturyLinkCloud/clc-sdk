@@ -77,7 +77,6 @@ func (c *Client) Auth() error {
 	if err != nil {
 		return err
 	}
-	req.Header.Add("Content-Type", "application/json")
 
 	return c.Do(req, &c.Token)
 }
@@ -87,6 +86,12 @@ func (c *Client) Do(req *http.Request, ret interface{}) error {
 		v, _ := httputil.DumpRequest(req, true)
 		log.Println(string(v))
 	}
+
+	req.Header.Add("Accept", "application/json")
+	if req.Body != nil {
+		req.Header.Add("Content-Type", "application/json")
+	}
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		log.Println(err)
@@ -125,7 +130,6 @@ func (c *Client) DoWithAuth(method, url string, body, ret interface{}) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer "+c.Token.Token)
 
 	return c.Do(req, ret)
