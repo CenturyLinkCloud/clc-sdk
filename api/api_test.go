@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -27,7 +28,6 @@ func TestEnvConfig(t *testing.T) {
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
-	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
 }
 
 func TestInvalidEnvConfig(t *testing.T) {
@@ -41,15 +41,32 @@ func TestInvalidEnvConfig(t *testing.T) {
 	assert.NotNil(err)
 }
 
-func TestNewConfig(t *testing.T) {
+func TestNewConfigWithNoUrl(t *testing.T) {
 	assert := assert.New(t)
 
-	c := api.NewConfig("user", "pass", "alias")
+	c, err := api.NewConfig("user", "pass", "alias", "")
 
+	u, _ := url.Parse("https://api.ctl.io/v2")
+
+	assert.Nil(err)
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
-	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
+	assert.Equal(u, c.BaseURL)
+}
+
+func TestNewConfigWithUrl(t *testing.T) {
+	assert := assert.New(t)
+
+	c, err := api.NewConfig("user", "pass", "alias", "https://api.other.io/v2")
+
+	u, _ := url.Parse("https://api.other.io/v2")
+
+	assert.Nil(err)
+	assert.Equal("user", c.User.Username)
+	assert.Equal("pass", c.User.Password)
+	assert.Equal("alias", c.Alias)
+	assert.Equal(u, c.BaseURL)
 }
 
 func TestFileConfig(t *testing.T) {
@@ -58,7 +75,8 @@ func TestFileConfig(t *testing.T) {
 	file, err := ioutil.TempFile("", "tmp")
 	assert.Nil(err)
 
-	conf := api.NewConfig("user", "pass", "alias")
+	conf, err := api.NewConfig("user", "pass", "alias", "https://api.ctl.io/v2")
+	assert.Nil(err)
 	b, _ := json.Marshal(conf)
 
 	assert.Nil(ioutil.WriteFile(file.Name(), b, 755))
@@ -69,7 +87,6 @@ func TestFileConfig(t *testing.T) {
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
-	assert.Equal("https://api.ctl.io/v2", c.BaseURL)
 
 	file.Close()
 	os.Remove(file.Name())
@@ -103,14 +120,7 @@ func TestAuth(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	config := api.Config{
-		User: api.User{
-			Username: "user.name",
-			Password: "password",
-		},
-		BaseURL: ts.URL,
-	}
-
+	config := genConfig(ts)
 	client := api.New(config)
 	err := client.Auth()
 
@@ -129,14 +139,7 @@ func TestDoWithAuth(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	config := api.Config{
-		User: api.User{
-			Username: "user.name",
-			Password: "password",
-		},
-		BaseURL: ts.URL,
-	}
-
+	config := genConfig(ts)
 	client := api.New(config)
 	err := client.DoWithAuth("GET", ts.URL, nil, nil)
 
@@ -151,16 +154,8 @@ func TestAuth_SerializationErr(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	client := api.New(api.Config{BaseURL: ts.URL})
-	err := client.Auth()
-
-	assert.NotNil(err)
-}
-
-func TestAuth_InvalidBaseURL(t *testing.T) {
-	assert := assert.New(t)
-
-	client := api.New(api.Config{BaseURL: ""})
+	config := genConfig(ts)
+	client := api.New(config)
 	err := client.Auth()
 
 	assert.NotNil(err)
@@ -299,6 +294,18 @@ func TestDelete(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(status, resp.Status)
+}
+
+func genConfig(ts *httptest.Server) api.Config {
+	u, _ := url.Parse(ts.URL)
+	config := api.Config{
+		User: api.User{
+			Username: "user.name",
+			Password: "password",
+		},
+		BaseURL: u,
+	}
+	return config
 }
 
 func mockConfig() api.Config {

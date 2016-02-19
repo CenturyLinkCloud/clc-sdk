@@ -2,6 +2,7 @@ package group_test
 
 import (
 	"encoding/json"
+	"net/url"
 	"testing"
 
 	"github.com/CenturyLinkCloud/clc-sdk/api"
@@ -97,13 +98,14 @@ func (m *MockClient) Delete(url string, resp interface{}) error {
 }
 
 func (m *MockClient) Config() *api.Config {
+	u, _ := url.Parse("http://localhost/v2")
 	return &api.Config{
 		User: api.User{
 			Username: "test.user",
 			Password: "s0s3cur3",
 		},
 		Alias:   "test",
-		BaseURL: "http://localhost/v2",
+		BaseURL: u,
 	}
 }
 

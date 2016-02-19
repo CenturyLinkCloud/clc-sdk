@@ -9,12 +9,15 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 
 	"github.com/mikebeyer/env"
 )
 
 var debug = os.Getenv("DEBUG") != ""
+
+const baseUriDefault = "https://api.ctl.io/v2"
 
 func New(config Config) *Client {
 	return &Client{
@@ -139,23 +142,24 @@ func (c *Client) serialize(body interface{}) (io.Reader, error) {
 }
 
 type Config struct {
-	User    User   `json:"user"`
-	Alias   string `json:"alias"`
-	BaseURL string `json:"-"`
+	User    User     `json:"user"`
+	Alias   string   `json:"alias"`
+	BaseURL *url.URL `json:"-"`
 }
 
 func (c Config) Valid() bool {
-	return c.User.Username != "" && c.User.Password != "" && c.Alias != "" && c.BaseURL != ""
+	return c.User.Username != "" && c.User.Password != "" && c.Alias != "" && c.BaseURL != nil
 }
 
 func EnvConfig() (Config, error) {
-	config := Config{
-		User: User{
-			Username: os.Getenv("CLC_USERNAME"),
-			Password: os.Getenv("CLC_PASSWORD"),
-		},
-		Alias:   os.Getenv("CLC_ALIAS"),
-		BaseURL: env.String("CLC_BASE_URL", "https://api.ctl.io/v2"),
+	user := os.Getenv("CLC_USERNAME")
+	pass := os.Getenv("CLC_PASSWORD")
+	alias := os.Getenv("CLC_ALIAS")
+	base := env.String("CLC_BASE_URL", baseUriDefault)
+
+	config, err := NewConfig(user, pass, alias, base)
+	if err != nil {
+		return config, err
 	}
 
 	if !config.Valid() {
@@ -164,15 +168,21 @@ func EnvConfig() (Config, error) {
 	return config, nil
 }
 
-func NewConfig(username, password, alias string) Config {
+func NewConfig(username, password, alias string, uri string) (Config, error) {
+	if uri == "" {
+		uri = "https://api.ctl.io/v2"
+	}
+
+	u, err := url.Parse(uri)
+
 	return Config{
 		User: User{
 			Username: username,
 			Password: password,
 		},
 		Alias:   alias,
-		BaseURL: "https://api.ctl.io/v2",
-	}
+		BaseURL: u,
+	}, err
 }
 
 func FileConfig(file string) (Config, error) {
@@ -184,8 +194,9 @@ func FileConfig(file string) (Config, error) {
 
 	err = json.Unmarshal(b, &config)
 
-	config.BaseURL = "https://api.ctl.io/v2"
-	return config, nil
+	u, err := url.Parse(baseUriDefault)
+	config.BaseURL = u
+	return config, err
 }
 
 type User struct {
