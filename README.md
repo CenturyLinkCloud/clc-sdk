@@ -29,6 +29,11 @@ config, _ := api.FileConfig("./config.json")
 
 ```
 
+Enable http wire tracing with env var `DEBUG=on`.
+
+Additionally, callers of the SDK should set `config.UserAgent` to identify to platform appropriately.
+
+
 Examples
 -------
 To create a new server

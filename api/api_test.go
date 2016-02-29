@@ -21,6 +21,7 @@ func TestEnvConfig(t *testing.T) {
 	os.Setenv("CLC_USERNAME", "user")
 	os.Setenv("CLC_PASSWORD", "pass")
 	os.Setenv("CLC_ALIAS", "alias")
+	os.Setenv("CLC_USER_AGENT", "clc-sdk")
 
 	c, err := api.EnvConfig()
 
@@ -28,6 +29,7 @@ func TestEnvConfig(t *testing.T) {
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
+	assert.Equal("clc-sdk", c.UserAgent)
 }
 
 func TestInvalidEnvConfig(t *testing.T) {
@@ -76,6 +78,7 @@ func TestFileConfig(t *testing.T) {
 	assert.Nil(err)
 
 	conf, err := api.NewConfig("user", "pass", "alias", "https://api.ctl.io/v2")
+	conf.UserAgent = "some-sdk-client"
 	assert.Nil(err)
 	b, _ := json.Marshal(conf)
 
@@ -87,6 +90,7 @@ func TestFileConfig(t *testing.T) {
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
 	assert.Equal("alias", c.Alias)
+	assert.Equal("some-sdk-client", c.UserAgent)
 
 	file.Close()
 	os.Remove(file.Name())
@@ -176,6 +180,11 @@ func TestGet(t *testing.T) {
 			return
 		}
 
+		if r.Header.Get("User-Agent") != "sdk-client" {
+			http.Error(w, "user-agent mismatch", http.StatusBadRequest)
+			return
+		}
+
 		if r.Method != "GET" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -248,6 +257,12 @@ func TestPut(t *testing.T) {
 			http.Error(w, "content-type missing", http.StatusBadRequest)
 			return
 		}
+
+		if r.Header.Get("User-Agent") != "sdk-client" {
+			http.Error(w, "user-agent mismatch", http.StatusBadRequest)
+			return
+		}
+
 		if r.Method != "PUT" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -286,6 +301,12 @@ func TestPatch(t *testing.T) {
 			http.Error(w, "content-type missing", http.StatusBadRequest)
 			return
 		}
+
+		if r.Header.Get("User-Agent") != "sdk-client" {
+			http.Error(w, "user-agent mismatch", http.StatusBadRequest)
+			return
+		}
+
 		if r.Method != "PATCH" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -323,6 +344,12 @@ func TestDelete(t *testing.T) {
 			http.Error(w, "content-type should not be present", http.StatusBadRequest)
 			return
 		}
+
+		if r.Header.Get("User-Agent") != "sdk-client" {
+			http.Error(w, "user-agent mismatch", http.StatusBadRequest)
+			return
+		}
+
 		if r.Method != "DELETE" {
 			http.Error(w, "no", http.StatusMethodNotAllowed)
 			return
@@ -360,7 +387,8 @@ func mockConfig() api.Config {
 			Username: "user.name",
 			Password: "password",
 		},
-		Alias: "t3bk",
+		Alias:     "t3bk",
+		UserAgent: "sdk-client",
 	}
 }
 
