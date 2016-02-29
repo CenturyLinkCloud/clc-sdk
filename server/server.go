@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/CenturyLinkCloud/clc-sdk/api"
@@ -230,6 +231,32 @@ type Disk struct {
 	Type   string `json:"type,omitempty"`
 }
 
+func (s *Service) AddSecondaryNetwork(name, networkId, ip string) (*status.Status, error) {
+	url := fmt.Sprintf("%s/servers/%s/%s/networks", s.config.BaseURL, s.config.Alias, name)
+	req := &SecondaryNetwork{
+		NetworkID: networkId,
+		IPAddress: ip,
+	}
+	// returned a non-standard status object, repackage into a proper one
+	resp := &QueuedOperation{}
+	st := &status.Status{}
+	err := s.client.Post(url, req, resp)
+	if err == nil {
+		if ok, id := resp.GetStatusID(); ok {
+			st.ID = id
+		}
+		if ok, href := resp.GetHref(); ok {
+			st.Href = href
+		}
+	}
+	return st, err
+}
+
+type SecondaryNetwork struct {
+	NetworkID string `json:"networkId,omitempty"`
+	IPAddress string `json:"ipAddress,omitempty"`
+}
+
 func UpdateCPU(num int) api.Update {
 	return api.Update{
 		Op:     "set",
@@ -376,4 +403,24 @@ type QueuedResponse struct {
 
 func (q *QueuedResponse) GetStatusID() (bool, string) {
 	return q.Links.GetID("status")
+}
+
+type QueuedOperation struct {
+	OperationID string `json:"operationId,omitempty"`
+	URI         string `json:"uri,omitempty"`
+}
+
+func (q *QueuedOperation) GetStatusID() (bool, string) {
+	return q.OperationID != "", q.OperationID
+}
+
+func (q *QueuedOperation) GetHref() (bool, string) {
+	var path = ""
+	if q.URI != "" {
+		u, err := url.Parse(q.URI)
+		if err == nil {
+			path = u.Path
+		}
+	}
+	return path != "", path
 }
