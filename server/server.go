@@ -394,17 +394,6 @@ type Response struct {
 	Links api.Links `json:"links"`
 }
 
-type QueuedResponse struct {
-	Server   string    `json:"server"`
-	IsQueued bool      `json:"isQueued"`
-	Links    api.Links `json:"links,omitempty"`
-	Error    string    `json:"errorMessage,omitempty"`
-}
-
-func (q *QueuedResponse) GetStatusID() (bool, string) {
-	return q.Links.GetID("status")
-}
-
 type QueuedOperation struct {
 	OperationID string `json:"operationId,omitempty"`
 	URI         string `json:"uri,omitempty"`
