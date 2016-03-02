@@ -70,3 +70,14 @@ const (
 	Complete = "succeeded"
 	Failed   = "failed"
 )
+
+type QueuedResponse struct {
+	Server   string    `json:"server,omitempty"`
+	IsQueued bool      `json:"isQueued,omitempty"`
+	Links    api.Links `json:"links,omitempty"`
+	Error    string    `json:"errorMessage,omitempty"`
+}
+
+func (q *QueuedResponse) GetStatusID() (bool, string) {
+	return q.Links.GetID("status")
+}
