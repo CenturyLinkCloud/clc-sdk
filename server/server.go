@@ -35,12 +35,12 @@ func (s *Service) Get(name string) (*Response, error) {
 	return resp, err
 }
 
-func (s *Service) Create(server Server) (*QueuedResponse, error) {
+func (s *Service) Create(server Server) (*status.QueuedResponse, error) {
 	if !server.Valid() {
 		return nil, ErrInvalidServer
 	}
 
-	resp := &QueuedResponse{}
+	resp := &status.QueuedResponse{}
 	url := fmt.Sprintf("%s/servers/%s", s.config.BaseURL, s.config.Alias)
 	err := s.client.Post(url, server, resp)
 	return resp, err
@@ -59,9 +59,9 @@ func (s *Service) Edit(name string, updates ...api.Update) error {
 	return err
 }
 
-func (s *Service) Delete(name string) (*QueuedResponse, error) {
+func (s *Service) Delete(name string) (*status.QueuedResponse, error) {
 	url := fmt.Sprintf("%s/servers/%s/%s", s.config.BaseURL, s.config.Alias, name)
-	resp := &QueuedResponse{}
+	resp := &status.QueuedResponse{}
 	err := s.client.Delete(url, resp)
 	return resp, err
 }
@@ -78,9 +78,9 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
-func (s *Service) Archive(servers ...string) ([]*QueuedResponse, error) {
+func (s *Service) Archive(servers ...string) ([]*status.QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/archive", s.config.BaseURL, s.config.Alias)
-	var resp []*QueuedResponse
+	var resp []*status.QueuedResponse
 	err := s.client.Post(url, servers, &resp)
 	return resp, err
 }
@@ -93,10 +93,10 @@ func (s *Service) Restore(name, group string) (*status.Status, error) {
 	return resp, err
 }
 
-func (s *Service) CreateSnapshot(expiration int, servers ...string) ([]*QueuedResponse, error) {
+func (s *Service) CreateSnapshot(expiration int, servers ...string) ([]*status.QueuedResponse, error) {
 	snapshot := Snapshot{Expiration: expiration, Servers: servers}
 	url := fmt.Sprintf("%s/operations/%s/servers/createSnapshot", s.config.BaseURL, s.config.Alias)
-	var resp []*QueuedResponse
+	var resp []*status.QueuedResponse
 	err := s.client.Post(url, snapshot, &resp)
 	return resp, err
 }
@@ -120,9 +120,9 @@ type Snapshot struct {
 	Servers    []string `json:"serverIds"`
 }
 
-func (s *Service) ExecutePackage(pkg Package, servers ...string) ([]*QueuedResponse, error) {
+func (s *Service) ExecutePackage(pkg Package, servers ...string) ([]*status.QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/executePackage", s.config.BaseURL, s.config.Alias)
-	var resp []*QueuedResponse
+	var resp []*status.QueuedResponse
 	exec := executePackage{Servers: servers, Package: pkg}
 	err := s.client.Post(url, exec, &resp)
 	return resp, err
@@ -138,9 +138,9 @@ type Package struct {
 	Params map[string]string `json:"parameters"`
 }
 
-func (s *Service) PowerState(state PowerState, servers ...string) ([]*QueuedResponse, error) {
+func (s *Service) PowerState(state PowerState, servers ...string) ([]*status.QueuedResponse, error) {
 	url := fmt.Sprintf("%s/operations/%s/servers/%s", s.config.BaseURL, s.config.Alias, state)
-	var resp []*QueuedResponse
+	var resp []*status.QueuedResponse
 	err := s.client.Post(url, servers, &resp)
 	return resp, err
 }
