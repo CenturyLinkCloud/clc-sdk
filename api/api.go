@@ -18,6 +18,7 @@ import (
 var debug = os.Getenv("DEBUG") != ""
 
 const baseUriDefault = "https://api.ctl.io/v2"
+const userAgentDefault = "CenturyLinkCloud/clc-sdk"
 
 func New(config Config) *Client {
 	return &Client{
@@ -87,6 +88,7 @@ func (c *Client) Do(req *http.Request, ret interface{}) error {
 		log.Println(string(v))
 	}
 
+	req.Header.Add("User-Agent", c.config.UserAgent)
 	req.Header.Add("Accept", "application/json")
 	if req.Body != nil {
 		req.Header.Add("Content-Type", "application/json")
@@ -146,9 +148,10 @@ func (c *Client) serialize(body interface{}) (io.Reader, error) {
 }
 
 type Config struct {
-	User    User     `json:"user"`
-	Alias   string   `json:"alias"`
-	BaseURL *url.URL `json:"-"`
+	User      User     `json:"user"`
+	Alias     string   `json:"alias"`
+	BaseURL   *url.URL `json:"-"`
+	UserAgent string   `json:"agent,omitempty"`
 }
 
 func (c Config) Valid() bool {
@@ -162,6 +165,10 @@ func EnvConfig() (Config, error) {
 	base := env.String("CLC_BASE_URL", baseUriDefault)
 
 	config, err := NewConfig(user, pass, alias, base)
+	if ua := os.Getenv("CLC_USER_AGENT"); ua != "" {
+		config.UserAgent = ua
+	}
+
 	if err != nil {
 		return config, err
 	}
@@ -174,7 +181,7 @@ func EnvConfig() (Config, error) {
 
 func NewConfig(username, password, alias string, uri string) (Config, error) {
 	if uri == "" {
-		uri = "https://api.ctl.io/v2"
+		uri = baseUriDefault
 	}
 
 	u, err := url.Parse(uri)
@@ -184,8 +191,9 @@ func NewConfig(username, password, alias string, uri string) (Config, error) {
 			Username: username,
 			Password: password,
 		},
-		Alias:   alias,
-		BaseURL: u,
+		Alias:     alias,
+		BaseURL:   u,
+		UserAgent: userAgentDefault,
 	}, err
 }
 
