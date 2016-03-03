@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/CenturyLinkCloud/clc-sdk/api"
@@ -50,6 +51,11 @@ type Status struct {
 	Href string `json:"href"`
 }
 
+/*
+   Response represents a running async job
+   result from polling status
+   {"status": "succeeded"}
+*/
 type Response struct {
 	Status string `json:"status"`
 }
@@ -71,6 +77,12 @@ const (
 	Failed   = "failed"
 )
 
+/* QueuedResponse represents a returned response for an async platform job
+   eg. create server
+   {"server":"web", "isQueued":true, "links":[
+     {"rel":"status", "href":"...", "id":"wa1-12345"},
+     {"rel":"self",  "href":"...", "id":"8134c91a66784c6dada651eba90a5123"}]}
+*/
 type QueuedResponse struct {
 	Server   string    `json:"server,omitempty"`
 	IsQueued bool      `json:"isQueued,omitempty"`
@@ -80,4 +92,39 @@ type QueuedResponse struct {
 
 func (q *QueuedResponse) GetStatusID() (bool, string) {
 	return q.Links.GetID("status")
+}
+
+/* QueuedOperation may be a one-off and/or experimental version of QueuedResponse
+   eg. add secondary network
+   {"operationId": "2b70710dba4142dcaf3ab2de68e4f40c", "uri": "..."}
+*/
+type QueuedOperation struct {
+	OperationID string `json:"operationId,omitempty"`
+	URI         string `json:"uri,omitempty"`
+}
+
+func (q *QueuedOperation) GetStatusID() (bool, string) {
+	return q.OperationID != "", q.OperationID
+}
+
+func (q *QueuedOperation) GetHref() (bool, string) {
+	var path = ""
+	if q.URI != "" {
+		u, err := url.Parse(q.URI)
+		if err == nil {
+			path = u.Path
+		}
+	}
+	return path != "", path
+}
+
+func (q *QueuedOperation) Status() *Status {
+	st := &Status{}
+	if ok, id := q.GetStatusID(); ok {
+		st.ID = id
+	}
+	if ok, href := q.GetHref(); ok {
+		st.Href = href
+	}
+	return st
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"net/url"
 	"regexp"
 
 	"github.com/CenturyLinkCloud/clc-sdk/api"
@@ -238,18 +237,12 @@ func (s *Service) AddSecondaryNetwork(name, networkId, ip string) (*status.Statu
 		IPAddress: ip,
 	}
 	// returned a non-standard status object, repackage into a proper one
-	resp := &QueuedOperation{}
-	st := &status.Status{}
+	resp := &status.QueuedOperation{}
 	err := s.client.Post(url, req, resp)
-	if err == nil {
-		if ok, id := resp.GetStatusID(); ok {
-			st.ID = id
-		}
-		if ok, href := resp.GetHref(); ok {
-			st.Href = href
-		}
+	if err != nil {
+		return nil, err
 	}
-	return st, err
+	return resp.Status(), nil
 }
 
 type SecondaryNetwork struct {
@@ -392,24 +385,4 @@ type Response struct {
 		ModifiedBy   string `json:"modifiedBy"`
 	} `json:"changeInfo"`
 	Links api.Links `json:"links"`
-}
-
-type QueuedOperation struct {
-	OperationID string `json:"operationId,omitempty"`
-	URI         string `json:"uri,omitempty"`
-}
-
-func (q *QueuedOperation) GetStatusID() (bool, string) {
-	return q.OperationID != "", q.OperationID
-}
-
-func (q *QueuedOperation) GetHref() (bool, string) {
-	var path = ""
-	if q.URI != "" {
-		u, err := url.Parse(q.URI)
-		if err == nil {
-			path = u.Path
-		}
-	}
-	return path != "", path
 }
