@@ -8,6 +8,7 @@ import (
 
 	"github.com/CenturyLinkCloud/clc-sdk/api"
 	"github.com/CenturyLinkCloud/clc-sdk/server"
+	"github.com/CenturyLinkCloud/clc-sdk/status"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -420,6 +421,25 @@ func TestDeletePublicIP(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
+func TestAddSecondaryNetwork(t *testing.T) {
+	assert := assert.New(t)
+
+	client := NewMockClient()
+	client.On("Post", "http://localhost/v2/servers/test/va1testserver01/networks", mock.Anything, mock.Anything).Return(nil)
+	service := server.New(client)
+
+	addr := "123.456.1.1"
+	name := "va1testserver01"
+	net := "61a7e67908ce4bedabfdaf694a1360fe"
+
+	resp, err := service.AddSecondaryNetwork(name, net, addr)
+
+	assert.Nil(err)
+	assert.IsType(resp, &status.Status{})
+	assert.Equal(resp.ID, "2b70710dba4142dcaf3ab2de68e4f40c")
+	client.AssertExpectations(t)
+}
+
 func TestArchiveServer(t *testing.T) {
 	assert := assert.New(t)
 
@@ -550,6 +570,10 @@ func (m *MockClient) Post(url string, body, resp interface{}) error {
 
 	if strings.HasSuffix(url, "publicIPAddresses") || strings.HasSuffix(url, "restore") {
 		json.Unmarshal([]byte(`{"id":"va1-12345","rel":"status","href":"/v2/operations/test/status/va1-12345"}`), resp)
+	}
+
+	if strings.HasSuffix(url, "networks") {
+		json.Unmarshal([]byte(`{"operationId":"2b70710dba4142dcaf3ab2de68e4f40c","uri":"http://api.ctl.io/v2-experimental/operations/RSDA/status/2b70710dba4142dcaf3ab2de68e4f40c"}`), resp)
 	}
 
 	if strings.Contains(url, "operations/test/servers") {
