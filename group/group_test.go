@@ -64,7 +64,7 @@ func TestUpdateGroup(t *testing.T) {
 	patches[1] = group.UpdateDescription("mangled")
 	patches[2] = group.UpdateParentGroupID("mangled")
 
-	_, err := service.Update(id, patches...)
+	err := service.Update(id, patches...)
 
 	assert.Nil(err)
 	client.AssertExpectations(t)

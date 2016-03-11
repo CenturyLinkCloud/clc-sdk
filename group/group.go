@@ -34,11 +34,9 @@ func (s *Service) Create(group Group) (*Response, error) {
 	return resp, err
 }
 
-func (s *Service) Update(id string, updates ...api.Update) (*status.Status, error) {
-	resp := &status.Status{}
+func (s *Service) Update(id string, updates ...api.Update) error {
 	url := fmt.Sprintf("%s/groups/%s/%s", s.config.BaseURL, s.config.Alias, id)
-	err := s.client.Patch(url, updates, resp)
-	return resp, err
+	return s.client.Patch(url, updates, nil)
 }
 
 func (s *Service) Delete(id string) (*status.Status, error) {
