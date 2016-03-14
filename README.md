@@ -13,7 +13,8 @@ $ make test
 
 Configuration
 -------
-The SDK supports two helpers for creating your configuration 
+The SDK supports the following helpers for creating your configuration 
+
 
 Reading from the environment
 
@@ -26,6 +27,17 @@ Reading from a file
 
 ```go
 config, _ := api.FileConfig("./config.json")
+
+```
+
+Direct configuration
+
+```go
+config, _ := api.NewConfig(un, pwd)
+// defaults:
+config.Alias = "" // resolved on Authentication
+config.UserAgent = "CenturyLinkCloud/clc-sdk"
+config.BaseURI = "https://api.ctl.io/v2"
 
 ```
 
