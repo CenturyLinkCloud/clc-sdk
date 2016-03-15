@@ -32,9 +32,18 @@ func TestEnvConfig(t *testing.T) {
 	assert.Equal("clc-sdk", c.UserAgent)
 }
 
+func clearEnvVars() {
+	os.Setenv("CLC_USERNAME", "")
+	os.Setenv("CLC_PASSWORD", "")
+	os.Setenv("CLC_ALIAS", "")
+	os.Setenv("CLC_BASE_URL", "")
+	os.Setenv("CLC_USER_AGENT", "")
+}
+
 func TestInvalidEnvConfig(t *testing.T) {
 	assert := assert.New(t)
 
+	clearEnvVars()
 	os.Setenv("CLC_USERNAME", "user")
 	os.Setenv("CLC_PASSWORD", "")
 
@@ -46,28 +55,34 @@ func TestInvalidEnvConfig(t *testing.T) {
 func TestNewConfigWithNoUrl(t *testing.T) {
 	assert := assert.New(t)
 
-	c, err := api.NewConfig("user", "pass", "alias", "")
+	clearEnvVars()
+	c, err := api.NewConfig("user", "pass")
 
 	u, _ := url.Parse("https://api.ctl.io/v2")
 
 	assert.Nil(err)
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
-	assert.Equal("alias", c.Alias)
+	assert.Equal("", c.Alias)
 	assert.Equal(u, c.BaseURL)
 }
 
 func TestNewConfigWithUrl(t *testing.T) {
 	assert := assert.New(t)
 
-	c, err := api.NewConfig("user", "pass", "alias", "https://api.other.io/v2")
+	clearEnvVars()
 
-	u, _ := url.Parse("https://api.other.io/v2")
+	alt := "https://api.other.io/v2"
+	os.Setenv("CLC_BASE_URL", alt)
+
+	c, err := api.NewConfig("user", "pass")
+
+	u, _ := url.Parse(alt)
 
 	assert.Nil(err)
 	assert.Equal("user", c.User.Username)
 	assert.Equal("pass", c.User.Password)
-	assert.Equal("alias", c.Alias)
+	assert.Equal("", c.Alias) // not set until Auth()
 	assert.Equal(u, c.BaseURL)
 }
 
@@ -77,8 +92,11 @@ func TestFileConfig(t *testing.T) {
 	file, err := ioutil.TempFile("", "tmp")
 	assert.Nil(err)
 
-	conf, err := api.NewConfig("user", "pass", "alias", "https://api.ctl.io/v2")
-	conf.UserAgent = "some-sdk-client"
+	clearEnvVars()
+	os.Setenv("CLC_ALIAS", "alias")
+	os.Setenv("CLC_USER_AGENT", "some-sdk-client")
+	conf, err := api.NewConfig("user", "pass")
+
 	assert.Nil(err)
 	b, _ := json.Marshal(conf)
 
@@ -131,6 +149,7 @@ func TestAuth(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(config.User.Username, actualUser.Username)
 	assert.Equal(config.User.Password, actualUser.Password)
+	assert.Equal("ALIAS", client.Config().Alias)
 }
 
 func TestDoWithAuth(t *testing.T) {
@@ -148,6 +167,7 @@ func TestDoWithAuth(t *testing.T) {
 	err := client.DoWithAuth("GET", ts.URL, nil, nil)
 
 	assert.Nil(err)
+	assert.Equal("ALIAS", client.Config().Alias)
 }
 
 func TestAuth_SerializationErr(t *testing.T) {

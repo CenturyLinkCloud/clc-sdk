@@ -79,7 +79,12 @@ func (c *Client) Auth() error {
 		return err
 	}
 
-	return c.Do(req, &c.Token)
+	err = c.Do(req, &c.Token)
+	if err == nil {
+		// set Alias from returned token
+		c.config.Alias = c.Token.Alias
+	}
+	return err
 }
 
 func (c *Client) Do(req *http.Request, ret interface{}) error {
@@ -112,6 +117,7 @@ func (c *Client) Do(req *http.Request, ret interface{}) error {
 		return nil
 	}
 
+	// FIXME? empty body: check status=204 or content-length=0 before parsing
 	return json.NewDecoder(resp.Body).Decode(ret)
 }
 
@@ -155,20 +161,13 @@ type Config struct {
 }
 
 func (c Config) Valid() bool {
-	return c.User.Username != "" && c.User.Password != "" && c.Alias != "" && c.BaseURL != nil
+	return c.User.Username != "" && c.User.Password != "" && c.BaseURL != nil
 }
 
 func EnvConfig() (Config, error) {
 	user := os.Getenv("CLC_USERNAME")
 	pass := os.Getenv("CLC_PASSWORD")
-	alias := os.Getenv("CLC_ALIAS")
-	base := env.String("CLC_BASE_URL", baseUriDefault)
-
-	config, err := NewConfig(user, pass, alias, base)
-	if ua := os.Getenv("CLC_USER_AGENT"); ua != "" {
-		config.UserAgent = ua
-	}
-
+	config, err := NewConfig(user, pass)
 	if err != nil {
 		return config, err
 	}
@@ -179,21 +178,21 @@ func EnvConfig() (Config, error) {
 	return config, nil
 }
 
-func NewConfig(username, password, alias string, uri string) (Config, error) {
-	if uri == "" {
-		uri = baseUriDefault
-	}
-
-	u, err := url.Parse(uri)
-
+// NewConfig takes credentials and returns a Config object that may be further customized.
+// Defaults for Alias, BaseURL, and UserAgent will be taken from respective env vars.
+func NewConfig(username, password string) (Config, error) {
+	alias := os.Getenv("CLC_ALIAS")
+	agent := env.String("CLC_USER_AGENT", userAgentDefault)
+	base := env.String("CLC_BASE_URL", baseUriDefault)
+	uri, err := url.Parse(base)
 	return Config{
 		User: User{
 			Username: username,
 			Password: password,
 		},
 		Alias:     alias,
-		BaseURL:   u,
-		UserAgent: userAgentDefault,
+		BaseURL:   uri,
+		UserAgent: agent,
 	}, err
 }
 
