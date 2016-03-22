@@ -152,6 +152,32 @@ func TestAuth(t *testing.T) {
 	assert.Equal("ALIAS", client.Config().Alias)
 }
 
+func TestAuthAlaias(t *testing.T) {
+	assert := assert.New(t)
+
+	actualUser := &api.User{}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			http.Error(w, "no", http.StatusMethodNotAllowed)
+			return
+		}
+
+		json.NewDecoder(r.Body).Decode(actualUser)
+
+		fmt.Fprintf(w, `{"userName":"user@email.com","accountAlias":"ALIAS","locationAlias":"DC1","roles":["AccountAdmin","ServerAdmin"],"bearerToken":"[LONG TOKEN VALUE]"}`)
+	}))
+	defer ts.Close()
+
+	config := genConfig(ts)
+	// override alias should be preserved regardless of auth response
+	config.Alias = "ABCD"
+	client := api.New(config)
+	err := client.Auth()
+
+	assert.Nil(err)
+	assert.Equal("ABCD", client.Config().Alias)
+}
+
 func TestDoWithAuth(t *testing.T) {
 	assert := assert.New(t)
 
