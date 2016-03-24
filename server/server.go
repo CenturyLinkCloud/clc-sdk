@@ -334,7 +334,7 @@ type Server struct {
 	AntiAffinityPolicyID string             `json:"antiAffinityPolicyId,omitempty"`
 	Customfields         []api.Customfields `json:"customFields,omitempty"`
 	Additionaldisks      []Disk             `json:"additionalDisks,omitempty"`
-	TTL                  time.Time          `json:"ttl,omitempty"`
+	TTL                  *time.Time         `json:"ttl,omitempty"`
 	Packages             []Package          `json:"packages,omitempty"`
 	ConfigurationID      string             `json:"configurationId,omitempty"`
 	OSType               string             `json:"osType,omitempty"`
