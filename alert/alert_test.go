@@ -53,7 +53,7 @@ func TestCreateAlertPolicy(t *testing.T) {
 			alert.Action{
 				Action: "email",
 				Setting: alert.Setting{
-					[]string{"user@company.com"},
+					Recipients: []string{"user@company.com"},
 				},
 			},
 		},
