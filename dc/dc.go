@@ -52,7 +52,7 @@ type CapabilitiesResponse struct {
 	Templates                  []struct {
 		Name               string   `json:"name"`
 		Description        string   `json:"description"`
-		StorageSizeGB      string   `json:"storageSizeGB"`
+		StorageSizeGB      int      `json:"storageSizeGB"`
 		Capabilities       []string `json:"capabilities"`
 		ReservedDrivePaths []string `json:"reservedDrivePaths"`
 	} `json:"templates"`
